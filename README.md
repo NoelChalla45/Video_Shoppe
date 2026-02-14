@@ -127,7 +127,7 @@ Minimum tables/entities required to implement all features:
 - Sale: decrement `available_copies` and `total_copies` (if you treat sale as permanent removal)
 
 ### Reset database (fresh start)
-⚠️ This deletes all DB data:
+(CAUTION) This deletes all DB data:
 ```bash
 docker compose down -v
 docker compose up -d
