@@ -94,9 +94,9 @@ Frontend should run on:
 Your `docker-compose.yml` should create a Postgres database with credentials that match `DATABASE_URL`.
 
 **Recommended DB values (example):**
-- user: `dvd_user`
-- password: `dvd_password`
-- database: `dvd_store`
+- user: `Dvd_User`
+- password: `Dvd_Password`
+- database: `Dvd_Store`
 - port: `5432`
 
 ### Environment variables (backend)
