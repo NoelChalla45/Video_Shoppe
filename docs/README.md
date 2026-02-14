@@ -26,14 +26,3 @@ Employees and owners can:
 - `/docs` - SRS/diagrams/design notes
 
 ---
-
-## Quick Start (Recommended)
-### 1) Prerequisites
-Install:
-- Node.js (LTS)
-- Docker Desktop
-
-### 2) Start the database
-From repo root:
-```bash
-docker compose up -d
