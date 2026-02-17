@@ -12,7 +12,7 @@ export default function Hero() {
 
             <div className="hero-buttons">
                 <button>Shop Now</button>
-                <button className="outline">Login</button>
+                {/*<button className="outline">Login</button>*/} {/*Removes button from home menu*/}
             </div>
         </div>
     </header>
