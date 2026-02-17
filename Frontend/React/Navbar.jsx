@@ -1,3 +1,4 @@
+/*Idea: On account page, have a log out button that sends you back to the login screen*/
 import "../styles/navbar.css";
 
 export default function Navbar() {
@@ -11,7 +12,7 @@ export default function Navbar() {
                 <li><a href="#account">Account</a></li>
             </ul> 
 
-            <button className="login-btn">Login</button>
+           {/*<button className="login-btn">Login</button>*/}
         </nav>
     )
 }
