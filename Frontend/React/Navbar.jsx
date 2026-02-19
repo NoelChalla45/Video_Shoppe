@@ -12,9 +12,11 @@ export default function Navbar() {
                 <li><Link to="/catalog">DVD Catalog</Link></li>
                 <li><Link to="/alerts">Rental Alerts</Link></li>
                 <li><Link to="/account">Account</Link></li>
+                <li><Link to ="/cart">Cart</Link></li>
             </ul> 
 
            {/*<button className="login-btn">Login</button>*/}
         </nav>
     )
 }
+
