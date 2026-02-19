@@ -4,7 +4,7 @@ import Hero from "./components/Hero";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-
+// Note: Install React Router DOM if you haven't already: npm install react-router-dom
 // Also make sure to add some customization to the login page, make it look nice. 
 // (Not required now)
 function App() {
