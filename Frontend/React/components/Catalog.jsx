@@ -168,7 +168,7 @@ export default function Catalog() {
             disabled={currentPage === 1} 
             onClick={() => {
               setCurrentPage(prev => prev - 1);
-              window.scrollTo(0, 0); 
+              //window.scrollTo(0, 0); 
             }}
           >
             Prev
@@ -181,7 +181,7 @@ export default function Catalog() {
             disabled={currentPage === totalPages || totalPages === 0} 
             onClick={() => {
               setCurrentPage(prev => prev + 1);
-              window.scrollTo(0, 0);
+              //window.scrollTo(0, 0);
             }}
           >
             Next
@@ -190,4 +190,5 @@ export default function Catalog() {
       </div>
     </div>
   );
+
 }
