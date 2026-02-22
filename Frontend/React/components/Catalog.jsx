@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { products } from '../components/ProductList';
+import { products } from './ProductList';
 import '../styles/catalog.css';
 
 export default function Catalog() {
