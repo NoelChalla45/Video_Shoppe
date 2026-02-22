@@ -1,0 +1,257 @@
+/* ── DVD Detail Page ──────────────────────────────────────── */
+.dvd-detail-page {
+    background: #0a0a0f;
+    min-height: 100vh;
+    padding: 100px 60px 60px;
+    color: #fff;
+}
+
+.dvd-detail-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.back-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 36px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.dvd-detail-layout {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+}
+
+/* ── Poster ───────────────────────────────────────────────── */
+.dvd-poster-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 280px;
+}
+
+.dvd-poster {
+    width: 100%;
+    border-radius: 14px;
+    object-fit: cover;
+    max-height: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.out-badge {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(200,30,30,0.85);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ── Info Panel ───────────────────────────────────────────── */
+.dvd-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.dvd-meta-top {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.dvd-category {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #4f8aff;
+    background: rgba(65,105,225,0.12);
+    border: 1px solid rgba(65,105,225,0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.dvd-year {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+}
+
+.dvd-title {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.dvd-rating {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+.rating-num {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+}
+
+.dvd-description {
+    font-size: 15px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.72);
+    max-width: 580px;
+    margin: 0;
+}
+
+/* ── Credits ──────────────────────────────────────────────── */
+.dvd-credits {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-left: 2px solid rgba(65,105,225,0.35);
+    padding-left: 18px;
+}
+
+.credit-row {
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.credit-label {
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+    min-width: 90px;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    padding-top: 2px;
+}
+
+.credit-value {
+    color: rgba(255,255,255,0.85);
+    flex: 1;
+}
+
+.stock-in  { color: #4ade80; font-weight: 600; }
+.stock-out { color: #f87171; font-weight: 600; }
+
+/* ── Pricing ──────────────────────────────────────────────── */
+.dvd-pricing {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 18px 28px;
+    width: fit-content;
+}
+
+.price-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.price-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.4);
+}
+
+.price-amount {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+}
+
+.price-amount small {
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    margin-left: 3px;
+}
+
+.price-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.dvd-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 13px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+}
+
+.action-btn:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.action-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.action-btn.rent {
+    background: linear-gradient(135deg, #4169E1, #1E90FF);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(65,105,225,0.35);
+}
+
+.action-btn.buy {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
+}
+
+/* ── Not found ────────────────────────────────────────────── */
+.dvd-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    gap: 20px;
+    color: #fff;
+}

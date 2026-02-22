@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { products } from '../components/ProductList'; 
-import '../Styles/catalog.css';
+import { useNavigate } from 'react-router-dom';
+import { products } from '../components/ProductList';
+import '../styles/catalog.css';
 
 export default function Catalog() {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(""); // Set state for search term input
   const [isBuyMode, setIsBuyMode] = useState(false); // Sets the default toggle for rent/buy switch (default/false is Rent)  
@@ -129,7 +131,7 @@ export default function Catalog() {
               const isOutOfStock = product.stock === 0;
 
               return (
-                <div key={product.id} className="product-card">
+                <div key={product.id} className="product-card" onClick={() => navigate(`/catalog/${product.id}`)} style={{ cursor: 'pointer' }}>
                   <div className="image-box">
                       <img 
                         src={product.image} 

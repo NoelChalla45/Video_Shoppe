@@ -3,29 +3,29 @@ import Login from "./components/Login";
 import Hero from "./components/Hero";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Catalog from "./components/Catalog";
+import DVDDetail from "./components/DVDDetail";
+import Account from "./components/Account";
 
-// Note: Install React Router DOM if you haven't already: npm install react-router-dom
-// Also make sure to add some customization to the login page, make it look nice. 
-// (Not required now)
+// Redirect to login if no token in localStorage
+function PrivateRoute({ children }) {
+  return localStorage.getItem("token") ? children : <Navigate to="/login" replace />;
+}
+
 function App() {
   return (
     <Router>
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <Navbar />
-        
-        {/* This spacer pushes everything below the Navbar */}
-        <div style={{ height: "80px" }}></div> 
 
         <main style={{ flex: "1" }}>
           <Routes>
-            {/* Default route redirects to Login */}
             <Route path="/" element={<Navigate to="/login" />} />
-            
-            {/* Login Page Route */}
             <Route path="/login" element={<Login />} />
-            
-            {/* Home/Hero Page Route */}
-            <Route path="/home" element={<Hero />} />
+            <Route path="/home" element={<PrivateRoute><Hero /></PrivateRoute>} />
+            <Route path="/catalog" element={<PrivateRoute><Catalog /></PrivateRoute>} />
+            <Route path="/catalog/:id" element={<PrivateRoute><DVDDetail /></PrivateRoute>} />
+            <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
           </Routes>
         </main>
 

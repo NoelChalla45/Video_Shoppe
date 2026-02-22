@@ -1,6 +1,14 @@
-.hero{
+/* ── Page wrapper ───────────────────────────────────────── */
+.home-page {
+    background: #0a0a0f;
+    color: #fff;
+    min-height: 100vh;
+}
+
+/* ── Hero Banner ─────────────────────────────────────────── */
+.hero {
     height: 100vh;
-    padding-top: 80px;
+    padding-top: 70px;
     background-image: url(https://cdn.wallpapersafari.com/25/60/Zpi3B8.jpeg);
     background-size: cover;
     background-position: center;
@@ -9,53 +17,252 @@
     align-items: center;
 }
 
-.overlay{
+.overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.2);
+    background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.80) 0%,
+        rgba(0,0,0,0.45) 60%,
+        rgba(0,0,0,0.10) 100%
+    );
 }
 
-.hero-contents{
-    padding-left: 60px;
-    max-width: 600px;
+.hero-contents {
+    position: relative;
+    z-index: 1;
+    padding-left: 80px;
+    max-width: 640px;
 }
 
-.hero h1{
-    font-size: 56px;
+.hero-eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #4f8aff;
+    margin-bottom: 16px;
+}
+
+.hero h1 {
+    font-size: 58px;
     line-height: 1.1;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    font-weight: 800;
+    color: #fff;
 }
 
-.hero span{
-    background: linear-gradient(90deg, #4169E1, #1E90FF);
+.hero span {
+    background: linear-gradient(90deg, #4169E1, #38bfff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.hero p{
-    color: #fff;
-    margin-bottom: 30px;
+.hero p {
+    color: rgba(255,255,255,0.75);
+    font-size: 17px;
+    margin-bottom: 32px;
+    line-height: 1.6;
 }
 
-.hero-buttons button{
-    padding: 12px 15px;
-    margin-right: 15px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background: #4169E1;
-}
-
-.hero-buttons .outline{
-    background: transparent;
-    border: 2px solid white;
-    color: white;
+.hero-buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
 }
 
 .hero-buttons button {
-    transition: transform 0.3s ease;
+    padding: 13px 28px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #4169E1, #1E90FF);
+    color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(65,105,225,0.35);
 }
 
 .hero-buttons button:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(65,105,225,0.55);
+}
+
+.hero-buttons .outline {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.35);
+    color: #fff;
+    box-shadow: none;
+}
+
+.hero-buttons .outline:hover {
+    border-color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.06);
+    box-shadow: none;
+}
+
+/* ── Shared section styles ───────────────────────────────── */
+.section {
+    padding: 70px 80px;
+}
+
+.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+/* ── Categories ──────────────────────────────────────────── */
+.categories-section {
+    background: #0f0f18;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.categories-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.category-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    color: rgba(255,255,255,0.85);
+}
+
+.category-chip:hover {
+    background: rgba(65,105,225,0.2);
+    border-color: rgba(65,105,225,0.5);
+    transform: translateY(-1px);
+}
+
+.cat-icon {
+    font-size: 16px;
+}
+
+/* ── Featured Titles ─────────────────────────────────────── */
+.featured-section {
+    background: #0a0a0f;
+}
+
+.featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.movie-card {
+    background: #13131e;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.movie-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+}
+
+.movie-poster {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    display: block;
+}
+
+.movie-info {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.movie-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+}
+
+.movie-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    margin: 0;
+}
+
+.movie-rating {
+    font-size: 13px;
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.rent-btn {
+    margin-top: auto;
+    padding: 8px 0;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #4169E1, #1E90FF);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.rent-btn:hover {
+    opacity: 0.85;
+}
+
+/* ── Promo Banner ────────────────────────────────────────── */
+.promo-banner {
+    background: linear-gradient(135deg, #1a237e 0%, #1565c0 100%);
+    padding: 70px 80px;
+    text-align: center;
+}
+
+.promo-content h2 {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #fff;
+}
+
+.promo-content p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 28px;
+}
+
+.promo-content button {
+    padding: 13px 32px;
+    border: 2px solid rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.promo-content button:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: #fff;
 }
