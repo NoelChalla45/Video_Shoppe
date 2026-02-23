@@ -7,6 +7,15 @@ import Catalog from "./components/Catalog";
 import DVDDetail from "./components/DVDDetail";
 import Account from "./components/Account";
 
+function ComingSoon({ title }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: "1rem" }}>
+      <h2 style={{ fontSize: "2rem" }}>🚧 {title}</h2>
+      <p style={{ color: "#888" }}>This page is coming soon.</p>
+    </div>
+  );
+}
+
 function PrivateRoute({ children }) {
   return localStorage.getItem("token") ? children : <Navigate to="/login" replace />;
 }
@@ -27,6 +36,9 @@ function Layout() {
           <Route path="/catalog" element={<PrivateRoute><Catalog /></PrivateRoute>} />
           <Route path="/catalog/:id" element={<PrivateRoute><DVDDetail /></PrivateRoute>} />
           <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
+          <Route path="/alerts" element={<PrivateRoute><ComingSoon title="Rental Alerts" /></PrivateRoute>} />
+          <Route path="/cart" element={<PrivateRoute><ComingSoon title="Cart" /></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </main>
 
