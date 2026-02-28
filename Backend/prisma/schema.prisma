@@ -18,3 +18,17 @@ model User {
 
   @@map("users")
 }
+
+model Inventory {
+  id          Int     @id @default(autoincrement())
+  name        String
+  price       Float
+  category    String
+  stock       Int
+  year        Int?
+  rating      Float?
+  director    String?
+  cast        String?
+  image       String
+  description String?
+}
