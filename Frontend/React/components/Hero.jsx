@@ -13,12 +13,12 @@ const CATEGORIES = [
 ];
 
 const FEATURED = [
-    { title: "Inception", year: 2010, genre: "Sci-Fi / Thriller", rating: "8.8", img: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_UX100.jpg" },
-    { title: "The Dark Knight", year: 2008, genre: "Action / Crime", rating: "9.0", img: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_UX100.jpg" },
-    { title: "Interstellar", year: 2014, genre: "Sci-Fi / Drama", rating: "8.6", img: "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_UX100.jpg" },
-    { title: "Pulp Fiction", year: 1994, genre: "Crime / Drama", rating: "8.9", img: "https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_UX100.jpg" },
-    { title: "The Matrix", year: 1999, genre: "Sci-Fi / Action", rating: "8.7", img: "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVlLTM5YTgtZjNmM2I1ZjVhN2IxXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_UX100.jpg" },
-    { title: "Forrest Gump", year: 1994, genre: "Drama / Romance", rating: "8.8", img: "https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjMzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_UX100.jpg" },
+    { title: "Inception", year: 2010, genre: "Sci-Fi / Thriller", rating: "8.8", img: "https://s3.amazonaws.com/nightjarprod/content/uploads/sites/130/2021/08/19090041/9gk7adHYeDvHkCSEqAvQNLV5Uge-scaled.jpg" },
+    { title: "The Dark Knight", year: 2008, genre: "Action / Crime", rating: "9.0", img: "https://m.media-amazon.com/images/I/91KkWf50SoL._AC_UF894,1000_QL80_.jpg" },
+    { title: "Interstellar", year: 2014, genre: "Sci-Fi / Drama", rating: "8.6", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwLxpRYgsPOliVFNFWURt16sM3GS0boxruFvrsOCGPVJDyzefdlol78fgU9J9icT0Vw2os&s=10" },
+    { title: "Pulp Fiction", year: 1994, genre: "Crime / Drama", rating: "8.9", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlLZ9YD1faDba-jst-393J9ilvVMFUigTSeg&s" },
+    { title: "The Matrix", year: 1999, genre: "Sci-Fi / Action", rating: "8.7", img: "https://m.media-amazon.com/images/I/613ypTLZHsL._AC_UF1000,1000_QL80_.jpg" },
+    { title: "Forrest Gump", year: 1994, genre: "Drama / Romance", rating: "8.8", img: "https://cdn.planetakino.ua/old-movie-files/00000000000000000000000000002104/opt_null" },
 ];
 
 export default function Hero() {
@@ -86,3 +86,4 @@ export default function Hero() {
         </div>
     );
 }
+
