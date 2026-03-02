@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const Login = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [mode, setMode] = useState("login"); // "login" | "register"
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -12,7 +14,11 @@ const Login = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const navigate = useNavigate();
+    useEffect(() => {
+        if (location.state?.mode === "register") {
+            setMode("register");
+        }
+    }, [location.state]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,7 +43,6 @@ const Login = () => {
                 return;
             }
 
-            // Save token
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
             navigate("/home");
@@ -141,7 +146,7 @@ const Login = () => {
 
                 <p className="signup-prompt">
                     {mode === "login"
-                        ? <>Don't have an account? <a onClick={switchMode} href="#">Sign up free</a></>
+                        ? <>Don&apos;t have an account? <a onClick={switchMode} href="#">Sign up free</a></>
                         : <>Already have an account? <a onClick={switchMode} href="#">Sign in</a></>
                     }
                 </p>

@@ -7,42 +7,37 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 export default function DVDDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    
+
     const [movie, setMovie] = useState(null);
     const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-    const fetchMovie = async () => {
-        try {
-            console.log("Fetching movie with ID:", id);
-            
-            const response = await fetch(`${API}/api/inventory/${id}`);
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Server error message:", errorData.error);
-                throw new Error("Movie not found");
+    useEffect(() => {
+        const fetchMovie = async () => {
+            try {
+                const response = await fetch(`${API}/api/inventory/${id}`);
+
+                if (!response.ok) {
+                    throw new Error("Movie not found");
+                }
+
+                const data = await response.json();
+                setMovie(data);
+            } catch (err) {
+                console.error("Fetch error details:", err);
+                setMovie(null);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const data = await response.json();
-            setMovie(data);
-        } catch (err) {
-            console.error("Fetch error details:", err);
-            setMovie(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+        if (id) fetchMovie();
+    }, [id]);
 
-    if (id) fetchMovie();
-}, [id]);
-
-    // ─── Loading  & Error Screens ─────────────────────────────────
     if (loading) {
         return (
             <div className="dvd-detail-page">
                 <div className="loading-container">
-                    <span className="spinner"></span>
+                    <span className="detail-spinner"></span>
                     <h2>Loading Movie Details...</h2>
                 </div>
             </div>
@@ -52,14 +47,13 @@ useEffect(() => {
     if (!movie) {
         return (
             <div className="dvd-not-found">
-                <h2>🎬 Movie not found.</h2>
-                <p>We couldn't find the DVD you're looking for.</p>
-                <button onClick={() => navigate("/catalog")}>← Back to Catalog</button>
+                <h2>Movie not found.</h2>
+                <p>We could not find the DVD you are looking for.</p>
+                <button className="not-found-btn" onClick={() => navigate("/catalog")}>Back to Catalog</button>
             </div>
         );
     }
 
-    // ─── Logic ──────────────────────
     const isOutOfStock = movie.stock === 0;
     const moviePrice = movie.price || 0;
     const buyPrice = (moviePrice * 5).toFixed(2);
@@ -76,7 +70,7 @@ useEffect(() => {
         <div className="dvd-detail-page">
             <div className="dvd-detail-inner">
                 <button className="back-btn" onClick={() => navigate("/catalog")}>
-                    ← Back to Catalog
+                    Back to Catalog
                 </button>
 
                 <div className="dvd-detail-layout">
@@ -101,7 +95,7 @@ useEffect(() => {
                         {movie.rating && (
                             <div className="dvd-rating">
                                 <span className="stars">{renderStars(movie.rating)}</span>
-                                <span className="rating-num">⭐ {movie.rating} / 10</span>
+                                <span className="rating-num">{movie.rating} / 10</span>
                             </div>
                         )}
 
@@ -125,7 +119,7 @@ useEffect(() => {
                             <div className="credit-row">
                                 <span className="credit-label">Availability</span>
                                 <span className={`credit-value ${isOutOfStock ? "stock-out" : "stock-in"}`}>
-                                    {isOutOfStock ? "Currently Unavailable" : `${movie.stock} copies in stock`}
+                                    {isOutOfStock ? "Currently unavailable" : `${movie.stock} copies in stock`}
                                 </span>
                             </div>
                         </div>
@@ -144,7 +138,7 @@ useEffect(() => {
 
                         <div className="dvd-actions">
                             <button className="action-btn rent" disabled={isOutOfStock}>
-                                {isOutOfStock ? "Out of Stock" : "🛒 Rent Now"}
+                                {isOutOfStock ? "Out of Stock" : "Rent Now"}
                             </button>
                             <button className="action-btn buy" disabled={isOutOfStock}>
                                 {isOutOfStock ? "Unavailable" : "Buy Now"}

@@ -1,16 +1,16 @@
 import "../styles/navbar.css";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "null");
 
-    const getInitials = (user) => {
-        if (!user) return "?";
-        if (user.name) {
-            return user.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+    const getInitials = (currentUser) => {
+        if (!currentUser) return "?";
+        if (currentUser.name) {
+            return currentUser.name.split(" ").map((word) => word[0]).join("").toUpperCase().slice(0, 2);
         }
-        return user.email[0].toUpperCase();
+        return currentUser.email[0].toUpperCase();
     };
 
     const handleLogout = () => {
@@ -19,16 +19,23 @@ export default function Navbar() {
         navigate("/login");
     };
 
-    return(
+    const navClass = ({ isActive }) => `nav-item-link ${isActive ? "active" : ""}`;
+
+    return (
         <nav className="navbar">
-            <h2 className="logo">🎬 Video Shoppe</h2>
+            <NavLink to="/home" className="brand-link" aria-label="Video Shoppe home">
+                <span className="brand-icon">VS</span>
+                <span className="logo">Video Shoppe</span>
+            </NavLink>
+
             <ul className="nav-links">
-                <li><Link to="/home">Home</Link></li>
-                <li><Link to="/catalog">DVD Catalog</Link></li>
-                <li><Link to="/alerts">Rental Alerts</Link></li>
-                <li><Link to="/account">Account</Link></li>
-                <li><Link to="/cart">Cart</Link></li>
+                <li><NavLink to="/home" className={navClass}>Home</NavLink></li>
+                <li><NavLink to="/catalog" className={navClass}>DVD Catalog</NavLink></li>
+                <li><NavLink to="/alerts" className={navClass}>Rental Alerts</NavLink></li>
+                <li><NavLink to="/account" className={navClass}>Account</NavLink></li>
+                <li><NavLink to="/cart" className={navClass}>Cart</NavLink></li>
             </ul>
+
             <div className="nav-user">
                 {user && (
                     <>
@@ -42,4 +49,3 @@ export default function Navbar() {
         </nav>
     );
 }
-

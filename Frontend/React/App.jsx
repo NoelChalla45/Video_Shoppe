@@ -6,12 +6,15 @@ import Footer from "./components/Footer";
 import Catalog from "./components/Catalog";
 import DVDDetail from "./components/DVDDetail";
 import Account from "./components/Account";
+import LandingPage from "./components/LandingPage";
 
 function ComingSoon({ title }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", gap: "1rem" }}>
-      <h2 style={{ fontSize: "2rem" }}>🚧 {title}</h2>
-      <p style={{ color: "#888" }}>This page is coming soon.</p>
+    <div className="coming-soon">
+      <div className="coming-soon-card">
+        <h2>{title}</h2>
+        <p>This section is on deck and will be available soon.</p>
+      </div>
     </div>
   );
 }
@@ -22,15 +25,17 @@ function PrivateRoute({ children }) {
 
 function Layout() {
   const location = useLocation();
+  const isPublicLanding = location.pathname === "/";
   const isLoginPage = location.pathname === "/login";
+  const hideSharedChrome = isPublicLanding || isLoginPage;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      {!isLoginPage && <Navbar />}
+      {!hideSharedChrome && <Navbar />}
 
       <main style={{ flex: "1" }}>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<PrivateRoute><Hero /></PrivateRoute>} />
           <Route path="/catalog" element={<PrivateRoute><Catalog /></PrivateRoute>} />
@@ -38,11 +43,11 @@ function Layout() {
           <Route path="/account" element={<PrivateRoute><Account /></PrivateRoute>} />
           <Route path="/alerts" element={<PrivateRoute><ComingSoon title="Rental Alerts" /></PrivateRoute>} />
           <Route path="/cart" element={<PrivateRoute><ComingSoon title="Cart" /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
 
-      {!isLoginPage && <Footer />}
+      {!hideSharedChrome && <Footer />}
     </div>
   );
 }

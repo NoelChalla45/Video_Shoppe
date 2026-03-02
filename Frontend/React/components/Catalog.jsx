@@ -9,22 +9,21 @@ export default function Catalog() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // UI States
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(""); 
-  const [isBuyMode, setIsBuyMode] = useState(false); 
-  const [selectedCategories, setSelectedCategories] = useState([]); 
-  const [maxPrice, setMaxPrice] = useState(100); 
-  const [showInStockOnly, setShowInStockOnly] = useState(false); 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isBuyMode, setIsBuyMode] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [maxPrice, setMaxPrice] = useState(100);
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`${API}/api/inventory`);
         if (!response.ok) throw new Error("Failed to fetch");
-        const data = await response.json();        
+        const data = await response.json();
         const sortedData = data.sort((a, b) => a.id - b.id);
-        
+
         setProducts(sortedData);
       } catch (err) {
         console.error("Database error:", err);
@@ -37,8 +36,7 @@ export default function Catalog() {
 
   const itemsPerPage = 6;
 
-  // Filter Logic
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = products.filter((product) => {
     const currentPrice = isBuyMode ? product.price * 5 : product.price;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
@@ -53,41 +51,40 @@ export default function Catalog() {
   const currentItems = filteredProducts.slice(firstIndex, lastIndex);
 
   const handleCategoryChange = (category) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    setSelectedCategories((prev) =>
+      prev.includes(category) ? prev.filter((current) => current !== category) : [...prev, category]
     );
     setCurrentPage(1);
   };
 
   return (
     <div className="catalog-layout">
-      {/* Sidebar Filters */}
       <aside className="filter-sidebar">
         <h3>Filters</h3>
-        
+
         <div className="filter-section">
-          <p className="filter-title">AVAILABILITY</p>
+          <p className="filter-title">Availability</p>
           <label className="checkbox-label">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={showInStockOnly}
               onChange={() => {
                 setShowInStockOnly(!showInStockOnly);
                 setCurrentPage(1);
-              }} 
+              }}
             />
             In Stock Only
           </label>
         </div>
 
         <div className="filter-section">
-          <p className="filter-title">CATEGORIES</p>
-          {["New Releases", "Highest Rated", "Classics", "Family & Kids", "Action", "Comedy", "Mystery & Thriller", "Sci-Fi"].map(cat => (
+          <p className="filter-title">Categories</p>
+          {["New Releases", "Highest Rated", "Classics", "Family & Kids", "Action", "Comedy", "Mystery & Thriller", "Sci-Fi"].map((cat) => (
             <label key={cat} className="checkbox-label">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={selectedCategories.includes(cat)}
-                onChange={() => handleCategoryChange(cat)} 
+                onChange={() => handleCategoryChange(cat)}
               />
               {cat}
             </label>
@@ -95,13 +92,13 @@ export default function Catalog() {
         </div>
 
         <div className="filter-section">
-          <p className="filter-title">PRICE RANGE</p>
-          <input 
-            type="range" 
-            min="0" 
-            max={isBuyMode ? "100" : "20"} 
-            value={maxPrice} 
-            onChange={(e) => setMaxPrice(e.target.value)} 
+          <p className="filter-title">Price Range</p>
+          <input
+            type="range"
+            min="0"
+            max={isBuyMode ? "100" : "20"}
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
           />
           <div className="price-labels">
             <span>$0</span>
@@ -111,35 +108,33 @@ export default function Catalog() {
       </aside>
 
       <div className="catalog-container">
-        {/* Search & Toggle */}
         <div className="search-controls">
-          <input 
-            type="text" 
-            placeholder="Search DVDs..." 
+          <input
+            type="text"
+            placeholder="Search DVDs..."
             className="search-input"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1); 
+              setCurrentPage(1);
             }}
           />
           <div className="toggle-group">
             <span className={!isBuyMode ? "active-label" : ""}>Rent</span>
             <label className="switch">
               <input type="checkbox" checked={isBuyMode} onChange={() => setIsBuyMode(!isBuyMode)} />
-              <span className="slider round"></span>
+              <span className="slider"></span>
             </label>
             <span className={isBuyMode ? "active-label" : ""}>Buy</span>
           </div>
         </div>
 
-        {/* Loading State for Grid Only */}
         {isLoading ? (
-          <div className="loading-grid">Loading Movie Collection...</div>
+          <div className="loading-grid">Loading movie collection...</div>
         ) : (
           <div className="product-grid">
             {currentItems.length > 0 ? (
-              currentItems.map(product => {
+              currentItems.map((product) => {
                 const displayPrice = isBuyMode ? (product.price * 5).toFixed(2) : product.price.toFixed(2);
                 const isOutOfStock = product.stock === 0;
 
@@ -150,7 +145,7 @@ export default function Catalog() {
                     </div>
                     <h3>{product.name}</h3>
                     <p className="price">${displayPrice} {!isBuyMode && <small>/day</small>}</p>
-                    <button className="add-btn" disabled={isOutOfStock} style={{ backgroundColor: isOutOfStock ? "#444" : "#2563eb" }}>
+                    <button className={`add-btn ${isOutOfStock ? "is-disabled" : ""}`} disabled={isOutOfStock}>
                       {isOutOfStock ? "Out of Stock" : (isBuyMode ? "Buy Now" : "Rent Now")}
                     </button>
                   </div>
@@ -161,12 +156,11 @@ export default function Catalog() {
             )}
           </div>
         )}
-        
-        {/* Pagination */}
+
         <div className="pagination">
-          <button className="nav-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
-          <span className="page-info"> Page {currentPage} of {totalPages || 1} </span>
-          <button className="nav-btn" disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+          <button className="nav-btn" disabled={currentPage === 1} onClick={() => setCurrentPage((prev) => prev - 1)}>Prev</button>
+          <span className="page-info">Page {currentPage} of {totalPages || 1}</span>
+          <button className="nav-btn" disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage((prev) => prev + 1)}>Next</button>
         </div>
       </div>
     </div>
