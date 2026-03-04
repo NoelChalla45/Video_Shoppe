@@ -23,35 +23,47 @@ export default function Account() {
     return (
         <div className="account-page">
             <div className="account-inner">
+                <header className="account-head">
+                    <div>
+                        <p className="account-eyebrow">Account Hub</p>
+                        <h1>Your Video Shoppe Profile</h1>
+                    </div>
+                    <div className="account-head-actions">
+                        <button className="edit-btn" onClick={() => navigate("/catalog")}>Browse Catalog</button>
+                        <button className="edit-btn alt" onClick={() => navigate("/alerts")}>Rental Alerts</button>
+                    </div>
+                </header>
 
-                {/* Profile Card */}
-                <div className="profile-card">
-                    <div className="profile-avatar">{getInitials(user)}</div>
-                    <div className="profile-info">
-                        <h1 className="profile-name">{displayName}</h1>
-                        <p className="profile-email">{user.email}</p>
-                        <span className="member-badge">🎬 Member since {memberSince}</span>
+                <div className="account-summary">
+                    {/* Profile Card */}
+                    <div className="profile-card">
+                        <div className="profile-avatar">{getInitials(user)}</div>
+                        <div className="profile-info">
+                            <h1 className="profile-name">{displayName}</h1>
+                            <p className="profile-email">{user.email}</p>
+                            <span className="member-badge">🎬 Member since {memberSince}</span>
+                        </div>
+                        <button className="edit-btn">Edit Profile</button>
                     </div>
-                    <button className="edit-btn">Edit Profile</button>
-                </div>
 
-                {/* Stats Row */}
-                <div className="stats-row">
-                    <div className="stat-card">
-                        <span className="stat-num">0</span>
-                        <span className="stat-label">Active Rentals</span>
-                    </div>
-                    <div className="stat-card">
-                        <span className="stat-num">3</span>
-                        <span className="stat-label">Max Rentals Allowed</span>
-                    </div>
-                    <div className="stat-card">
-                        <span className="stat-num">0</span>
-                        <span className="stat-label">Total Rented</span>
-                    </div>
-                    <div className="stat-card">
-                        <span className="stat-num">0</span>
-                        <span className="stat-label">Overdue</span>
+                    {/* Stats Right Side */}
+                    <div className="stats-row">
+                        <div className="stat-card">
+                            <span className="stat-num">0</span>
+                            <span className="stat-label">ACTIVE RENTALS</span>
+                        </div>
+                        <div className="stat-card">
+                            <span className="stat-num">3</span>
+                            <span className="stat-label">MAX RENTALS ALLOWED</span>
+                        </div>
+                        <div className="stat-card">
+                            <span className="stat-num">0</span>
+                            <span className="stat-label">TOTAL RENTED</span>
+                        </div>
+                        <div className="stat-card">
+                            <span className="stat-num">0</span>
+                            <span className="stat-label">OVERDUE</span>
+                        </div>
                     </div>
                 </div>
 
@@ -62,6 +74,7 @@ export default function Account() {
                         <div className="empty-state">
                             <span className="empty-icon">📀</span>
                             <p>No active rentals right now.</p>
+                            <small>When you rent a title, its due date and pickup info will show here.</small>
                             <button className="browse-btn" onClick={() => navigate("/catalog")}>
                                 Browse Catalog
                             </button>
@@ -74,6 +87,7 @@ export default function Account() {
                         <div className="empty-state">
                             <span className="empty-icon">🎞️</span>
                             <p>No rental history yet.</p>
+                            <small>Completed rentals will appear here for quick re-rents.</small>
                         </div>
                     </section>
                 </div>
@@ -103,6 +117,22 @@ export default function Account() {
                             </div>
                             <button className="settings-btn" onClick={() => navigate("/alerts")}>Manage</button>
                         </div>
+                    </div>
+                </section>
+
+                <section className="account-section quick-actions-section">
+                    <h2 className="section-heading">Quick Actions</h2>
+                    <div className="quick-actions-grid">
+                        <button className="quick-action-card" onClick={() => navigate("/catalog")}>
+                            <span>🎬</span>
+                            <strong>Find Something to Watch</strong>
+                            <p>Browse the full movie catalog and reserve your next title.</p>
+                        </button>
+                        <button className="quick-action-card" onClick={() => navigate("/alerts")}>
+                            <span>⏰</span>
+                            <strong>Manage Rental Reminders</strong>
+                            <p>Keep track of due dates and new release notifications.</p>
+                        </button>
                     </div>
                 </section>
 

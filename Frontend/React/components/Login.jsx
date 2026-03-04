@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -62,6 +62,7 @@ const Login = () => {
 
     return (
         <div className="login-page">
+            <Link to="/" className="login-back-link">Back to Home</Link>
             <div className="login-card">
                 <div className="login-brand">
                     <span className="login-brand-icon">🎬</span>

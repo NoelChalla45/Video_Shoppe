@@ -7,6 +7,7 @@ import Catalog from "./components/Catalog";
 import DVDDetail from "./components/DVDDetail";
 import Account from "./components/Account";
 import LandingPage from "./components/LandingPage";
+import CatalogPreview from "./components/CatalogPreview";
 
 function ComingSoon({ title }) {
   return (
@@ -27,7 +28,8 @@ function Layout() {
   const location = useLocation();
   const isPublicLanding = location.pathname === "/";
   const isLoginPage = location.pathname === "/login";
-  const hideSharedChrome = isPublicLanding || isLoginPage;
+  const isCatalogPreviewPage = location.pathname === "/catalog-preview";
+  const hideSharedChrome = isPublicLanding || isLoginPage || isCatalogPreviewPage;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -37,6 +39,7 @@ function Layout() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/catalog-preview" element={<CatalogPreview />} />
           <Route path="/home" element={<PrivateRoute><Hero /></PrivateRoute>} />
           <Route path="/catalog" element={<PrivateRoute><Catalog /></PrivateRoute>} />
           <Route path="/catalog/:id" element={<PrivateRoute><DVDDetail /></PrivateRoute>} />

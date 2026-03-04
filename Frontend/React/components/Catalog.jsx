@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/catalog.css';
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const CATEGORIES = ["New Releases", "Highest Rated", "Classics", "Family & Kids", "Action", "Comedy", "Mystery & Thriller", "Sci-Fi"];
 
 export default function Catalog() {
   const navigate = useNavigate();
@@ -34,6 +35,12 @@ export default function Catalog() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const modeMax = isBuyMode ? 100 : 20;
+    setMaxPrice((prev) => Math.min(Number(prev), modeMax));
+    setCurrentPage(1);
+  }, [isBuyMode]);
+
   const itemsPerPage = 6;
 
   const filteredProducts = products.filter((product) => {
@@ -57,10 +64,21 @@ export default function Catalog() {
     setCurrentPage(1);
   };
 
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setSelectedCategories([]);
+    setMaxPrice(isBuyMode ? 100 : 20);
+    setShowInStockOnly(false);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="catalog-layout">
       <aside className="filter-sidebar">
-        <h3>Filters</h3>
+        <div className="sidebar-head">
+          <h3>Filters</h3>
+          <button type="button" className="clear-filters-btn" onClick={clearAllFilters}>Clear</button>
+        </div>
 
         <div className="filter-section">
           <p className="filter-title">Availability</p>
@@ -79,7 +97,7 @@ export default function Catalog() {
 
         <div className="filter-section">
           <p className="filter-title">Categories</p>
-          {["New Releases", "Highest Rated", "Classics", "Family & Kids", "Action", "Comedy", "Mystery & Thriller", "Sci-Fi"].map((cat) => (
+          {CATEGORIES.map((cat) => (
             <label key={cat} className="checkbox-label">
               <input
                 type="checkbox"
@@ -108,6 +126,17 @@ export default function Catalog() {
       </aside>
 
       <div className="catalog-container">
+        <div className="catalog-head">
+          <div>
+            <p className="catalog-eyebrow">Movie Library</p>
+            <h1>DVD Catalog</h1>
+          </div>
+          <div className="catalog-meta">
+            <span>{filteredProducts.length} titles found</span>
+            <span>{isBuyMode ? "Buy Mode" : "Rent Mode"}</span>
+          </div>
+        </div>
+
         <div className="search-controls">
           <input
             type="text"
@@ -142,8 +171,12 @@ export default function Catalog() {
                   <div key={product.id} className="product-card" onClick={() => navigate(`/catalog/${product.id}`)}>
                     <div className="image-box">
                       <img src={product.image} alt={product.name} style={{ opacity: isOutOfStock ? 0.5 : 1 }} />
+                      <span className={`stock-badge ${isOutOfStock ? "out" : "in"}`}>
+                        {isOutOfStock ? "Out" : `${product.stock} in stock`}
+                      </span>
                     </div>
                     <h3>{product.name}</h3>
+                    <p className="category-label">{product.category || "Featured"}</p>
                     <p className="price">${displayPrice} {!isBuyMode && <small>/day</small>}</p>
                     <button className={`add-btn ${isOutOfStock ? "is-disabled" : ""}`} disabled={isOutOfStock}>
                       {isOutOfStock ? "Out of Stock" : (isBuyMode ? "Buy Now" : "Rent Now")}

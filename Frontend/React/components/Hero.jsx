@@ -1,17 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "../styles/hero.css";
 
-const CATEGORIES = [
-    { icon: "🎬", label: "New Releases" },
-    { icon: "🔥", label: "Trending" },
-    { icon: "🏆", label: "Top Rated" },
-    { icon: "😂", label: "Comedy" },
-    { icon: "👻", label: "Horror" },
-    { icon: "🚀", label: "Sci-Fi" },
-    { icon: "❤️", label: "Romance" },
-    { icon: "🎭", label: "Drama" },
-];
-
 const FEATURED = [
     { title: "Inception", year: 2010, genre: "Sci-Fi / Thriller", rating: "8.8", img: "https://s3.amazonaws.com/nightjarprod/content/uploads/sites/130/2021/08/19090041/9gk7adHYeDvHkCSEqAvQNLV5Uge-scaled.jpg" },
     { title: "The Dark Knight", year: 2008, genre: "Action / Crime", rating: "9.0", img: "https://m.media-amazon.com/images/I/91KkWf50SoL._AC_UF894,1000_QL80_.jpg" },
@@ -19,6 +8,9 @@ const FEATURED = [
     { title: "Pulp Fiction", year: 1994, genre: "Crime / Drama", rating: "8.9", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlLZ9YD1faDba-jst-393J9ilvVMFUigTSeg&s" },
     { title: "The Matrix", year: 1999, genre: "Sci-Fi / Action", rating: "8.7", img: "https://m.media-amazon.com/images/I/613ypTLZHsL._AC_UF1000,1000_QL80_.jpg" },
     { title: "Forrest Gump", year: 1994, genre: "Drama / Romance", rating: "8.8", img: "https://cdn.planetakino.ua/old-movie-files/00000000000000000000000000002104/opt_null" },
+    { title: "Spirited Away", year: 2001, genre: "Anime / Fantasy", rating: "8.6", img: "https://m.media-amazon.com/images/I/81W8Gf6M8kL._AC_UF894,1000_QL80_.jpg" },
+    { title: "The Shining", year: 1980, genre: "Horror / Mystery", rating: "8.4", img: "https://m.media-amazon.com/images/I/81WEwZfE7-L._AC_UF894,1000_QL80_.jpg" },
+    { title: "The Shawshank Redemption", year: 1994, genre: "Drama", rating: "9.3", img: "https://m.media-amazon.com/images/I/81nC4u7XOXL._AC_UF894,1000_QL80_.jpg" },
 ];
 
 export default function Hero() {
@@ -44,22 +36,12 @@ export default function Hero() {
                 </div>
             </header>
 
-            {/* Categories */}
-            <section className="section categories-section">
-                <h2 className="section-title">Browse by Genre</h2>
-                <div className="categories-grid">
-                    {CATEGORIES.map(cat => (
-                        <div className="category-chip" key={cat.label}>
-                            <span className="cat-icon">{cat.icon}</span>
-                            <span>{cat.label}</span>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
             {/* Featured Titles */}
             <section className="section featured-section">
-                <h2 className="section-title">Featured Titles</h2>
+                <div className="section-head">
+                    <h2 className="section-title">Featured Tonight</h2>
+                    <button className="head-link-btn" onClick={() => navigate("/catalog")}>View Full Catalog</button>
+                </div>
                 <div className="featured-grid">
                     {FEATURED.map(movie => (
                         <div className="movie-card" key={movie.title}>
@@ -68,19 +50,36 @@ export default function Hero() {
                                 <h3 className="movie-title">{movie.title}</h3>
                                 <p className="movie-meta">{movie.year} · {movie.genre}</p>
                                 <div className="movie-rating">⭐ {movie.rating}</div>
-                                <button className="rent-btn">Rent Now</button>
+                                <button className="rent-btn" onClick={() => navigate("/catalog")}>Rent Now</button>
                             </div>
                         </div>
                     ))}
                 </div>
             </section>
 
-            {/* Banner CTA */}
+            {/* Bottom Section */}
             <section className="promo-banner">
                 <div className="promo-content">
-                    <h2>New arrivals every Friday.</h2>
-                    <p>Set up rental alerts and never miss a new release.</p>
-                    <button onClick={() => navigate("/alerts")}>Set Up Alerts</button>
+                    <h2>Plan your next movie night.</h2>
+                    <p>Track new drops, keep favorites ready, and get faster picks every weekend.</p>
+                    <div className="promo-actions">
+                        <button onClick={() => navigate("/alerts")}>Set Up Alerts</button>
+                        <button className="promo-outline" onClick={() => navigate("/account")}>Manage Account</button>
+                    </div>
+                </div>
+                <div className="promo-stats">
+                    <article>
+                        <span>New This Week</span>
+                        <strong>24 Titles</strong>
+                    </article>
+                    <article>
+                        <span>Most Rented</span>
+                        <strong>Sci-Fi Classics</strong>
+                    </article>
+                    <article>
+                        <span>Average Pickup</span>
+                        <strong>Under 10 min</strong>
+                    </article>
                 </div>
             </section>
         </div>

@@ -53,7 +53,7 @@ export default function LandingPage() {
             <Link to={isLoggedIn ? "/home" : "/login"} className="primary-action">
               {isLoggedIn ? "Enter My Library" : "Start Watching"}
             </Link>
-            <Link to={isLoggedIn ? "/catalog" : "/login"} className="secondary-action">
+            <Link to={isLoggedIn ? "/catalog" : "/catalog-preview"} className="secondary-action">
               Explore Catalog
             </Link>
           </div>
@@ -71,17 +71,14 @@ export default function LandingPage() {
 
         <section className="genre-wall" aria-label="Popular genres">
           <h2>Popular Shelves</h2>
+          <p className="genre-copy">Quick-pick lanes for every kind of movie night.</p>
           <div className="genre-list">
             {GENRES.map((genre) => (
-              <span key={genre} className="genre-pill">{genre}</span>
+              <Link key={genre} to={`/catalog-preview?genre=${encodeURIComponent(genre)}`} className="genre-pill">
+                <h3>{genre}</h3>
+              </Link>
             ))}
           </div>
-        </section>
-
-        <section className="final-cta">
-          <h2>Movie night should feel legendary.</h2>
-          <p>Create your account, save your picks, and never miss new drops.</p>
-          <Link to="/login" state={{ mode: "register" }} className="final-cta-btn">Create Free Account</Link>
         </section>
       </main>
     </div>
