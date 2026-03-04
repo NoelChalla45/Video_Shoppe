@@ -8,9 +8,9 @@ const FEATURED = [
     { title: "Pulp Fiction", year: 1994, genre: "Crime / Drama", rating: "8.9", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlLZ9YD1faDba-jst-393J9ilvVMFUigTSeg&s" },
     { title: "The Matrix", year: 1999, genre: "Sci-Fi / Action", rating: "8.7", img: "https://m.media-amazon.com/images/I/613ypTLZHsL._AC_UF1000,1000_QL80_.jpg" },
     { title: "Forrest Gump", year: 1994, genre: "Drama / Romance", rating: "8.8", img: "https://cdn.planetakino.ua/old-movie-files/00000000000000000000000000002104/opt_null" },
-    { title: "Spirited Away", year: 2001, genre: "Anime / Fantasy", rating: "8.6", img: "https://m.media-amazon.com/images/I/81W8Gf6M8kL._AC_UF894,1000_QL80_.jpg" },
-    { title: "The Shining", year: 1980, genre: "Horror / Mystery", rating: "8.4", img: "https://m.media-amazon.com/images/I/81WEwZfE7-L._AC_UF894,1000_QL80_.jpg" },
-    { title: "The Shawshank Redemption", year: 1994, genre: "Drama", rating: "9.3", img: "https://m.media-amazon.com/images/I/81nC4u7XOXL._AC_UF894,1000_QL80_.jpg" },
+    { title: "Spirited Away", year: 2001, genre: "Anime / Fantasy", rating: "8.6", img: "https://m.media-amazon.com/images/I/712aNdEk6-L._AC_UF894,1000_QL80_.jpg" },
+    { title: "The Shining", year: 1980, genre: "Horror / Mystery", rating: "8.4", img: "https://s3.amazonaws.com/nightjarprod/content/uploads/sites/130/2023/05/10155101/shining-poster.jpeg" },
+    { title: "The Shawshank Redemption", year: 1994, genre: "Drama", rating: "9.3", img: "https://m.media-amazon.com/images/I/51r1lzFTpFL._AC_UF894,1000_QL80_.jpg" },
 ];
 
 export default function Hero() {
@@ -85,4 +85,5 @@ export default function Hero() {
         </div>
     );
 }
+
 
