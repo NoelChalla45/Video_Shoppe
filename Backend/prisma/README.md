@@ -1,22 +1,21 @@
-# Backend / prisma
+# Prisma
 
-Prisma ORM configuration and database schema.
+Prisma schema and seed data for the backend.
 
 ## Files
-- `schema.prisma` — Defines the database connection (Prisma Postgres) and all data models.
+- `schema.prisma`: datasource, enums, and models.
+- `seed.js`: seed inventory records.
 
-## Current Models
-| Model | Description |
-|---|---|
-| `User` | Employee/owner accounts. Stores email, hashed password, and name. |
+## Core Models
+- `User`: account identity and role (`CUSTOMER`, `EMPLOYEE`, `OWNER`).
+- `Inventory`: DVD records and stock counts.
+- `Order`: checkout header linked to user.
+- `OrderItem`: per-DVD checkout line items with `RENTAL` or `PURCHASE` type.
 
-## Planned Models (not yet added)
-- `DVD` — Title, genre, year, rating, stock count
-- `Customer` — Contact info, rental eligibility
-- `Rental` — Links a customer to DVDs, tracks due date and return status
-- `RentalItem` — Individual DVD line items within a rental
-- `Alert` — Due date and availability notifications
-- `TimeLog` — Employee clock in/out records (non-editable)
-
----
-> **Status: In Progress** — User model live in database. Remaining models to be added in Sprint 5.
+## Typical Workflow
+```bash
+cd Backend
+npm run db:generate
+npm run db:push
+npm run seed
+```

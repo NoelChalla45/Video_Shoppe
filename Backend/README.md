@@ -1,18 +1,28 @@
 # Backend
 
-Node.js + Express REST API for Video Shoppe.
+Node.js + Express API for Video Shoppe.
 
-## Files
-- `package.json` — project dependencies and scripts (`npm run dev` to start)
-- `src/` — all server source code
-- `prisma/` — database schema and Prisma config
+## Main Capabilities
+- Authentication and role-aware login/register
+- Inventory read endpoints for storefront and staff views
+- Owner-protected inventory write endpoints
+- Checkout and order persistence
+- Owner-protected employee account lookup endpoints
 
 ## Scripts
-| Command | What it does |
+| Command | Description |
 |---|---|
-| `npm run dev` | Starts the server with auto-reload (port 5000) |
-| `npx prisma studio` | Opens a browser UI to view/edit the database |
-| `npx prisma db push` | Syncs schema changes to the live database |
+| `npm run dev` | Start backend with watch mode |
+| `npm run start` | Start backend once |
+| `npm run db:generate` | Generate Prisma client |
+| `npm run db:push` | Push Prisma schema to database |
+| `npm run seed` | Seed inventory data |
+| `npm run db:studio` | Open Prisma Studio |
 
----
-> **Status: In Progress** — Auth routes complete. Inventory, Rental, Customer, Alert, and TimeLog routes still to be built.
+## Route Modules
+- `src/routes/auth.js`
+- `src/routes/inventory.js`
+- `src/routes/orders.js`
+
+## Middleware
+- `src/middleware/auth.js` for authentication and role checks.

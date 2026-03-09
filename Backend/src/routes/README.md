@@ -1,16 +1,21 @@
-# Backend / src / routes
+# Backend Routes
 
-Express route handlers. Each file covers one feature area and is mounted in `src/index.js`.
+Feature-oriented Express route files mounted in `src/index.js`.
 
-## Files
-- `auth.js` — Register and login endpoints (`POST /api/auth/register`, `POST /api/auth/login`). Hashes passwords with bcrypt, returns a JWT token on success.
+## Current Route Files
+- `auth.js`
+  - Register/login
+  - Get current user
+  - Owner-only employee account list/detail
+- `inventory.js`
+  - Inventory list/detail
+  - Owner-only inventory write actions
+- `orders.js`
+  - Authenticated checkout
+  - Customer order history
+  - Employee/owner recent customer orders
 
-## Planned Route Files (not yet built)
-- `dvds.js` — DVD inventory CRUD (search, add, update stock)
-- `customers.js` — Register customer, view records, rental eligibility
-- `rentals.js` — Rental transactions, return process, enforce 3-DVD max
-- `alerts.js` — Due date alerts, overdue reminders, availability notifications
-- `timelog.js` — Employee clock in/out, view non-editable logs
-
----
-> **Status: In Progress** — Auth routes done. All other route files pending Sprint 5+.
+## Protection Model
+- Public reads where needed for catalog display.
+- JWT-based `requireAuth` for protected actions.
+- `requireRole` for owner/employee capability boundaries.
