@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/account.css";
+import { getAccountActivity } from "../utils/accountActivity";
 
 export default function Account() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "null");
+    const [accountActivity] = useState(() => getAccountActivity(user));
 
     if (!user) {
         navigate("/login");
@@ -19,6 +22,17 @@ export default function Account() {
 
     const displayName = user.name || "Member";
     const memberSince = "February 2026"; // placeholder until we store createdAt on frontend
+    const activeRentals = accountActivity.activeRentals || [];
+    const history = accountActivity.history || [];
+    const totalRented = history
+        .filter((entry) => entry.mode === "rent")
+        .reduce((sum, entry) => sum + Number(entry.quantity || 0), 0);
+    const overdueCount = activeRentals.filter((rental) => new Date(rental.dueDate) < new Date()).length;
+
+    const formatDateTime = (dateValue) => {
+        if (!dateValue) return "N/A";
+        return new Date(dateValue).toLocaleString();
+    };
 
     return (
         <div className="account-page">
@@ -49,7 +63,7 @@ export default function Account() {
                     {/* Stats Right Side */}
                     <div className="stats-row">
                         <div className="stat-card">
-                            <span className="stat-num">0</span>
+                            <span className="stat-num">{activeRentals.length}</span>
                             <span className="stat-label">ACTIVE RENTALS</span>
                         </div>
                         <div className="stat-card">
@@ -57,11 +71,11 @@ export default function Account() {
                             <span className="stat-label">MAX RENTALS ALLOWED</span>
                         </div>
                         <div className="stat-card">
-                            <span className="stat-num">0</span>
+                            <span className="stat-num">{totalRented}</span>
                             <span className="stat-label">TOTAL RENTED</span>
                         </div>
                         <div className="stat-card">
-                            <span className="stat-num">0</span>
+                            <span className="stat-num">{overdueCount}</span>
                             <span className="stat-label">OVERDUE</span>
                         </div>
                     </div>
@@ -71,24 +85,59 @@ export default function Account() {
                     {/* Current Rentals */}
                     <section className="account-section">
                         <h2 className="section-heading">Current Rentals</h2>
-                        <div className="empty-state">
-                            <span className="empty-icon">📀</span>
-                            <p>No active rentals right now.</p>
-                            <small>When you rent a title, its due date and pickup info will show here.</small>
-                            <button className="browse-btn" onClick={() => navigate("/catalog")}>
-                                Browse Catalog
-                            </button>
-                        </div>
+                        {activeRentals.length === 0 ? (
+                            <div className="empty-state">
+                                <span className="empty-icon">📀</span>
+                                <p>No active rentals right now.</p>
+                                <small>When you rent a title, its due date and pickup info will show here.</small>
+                                <button className="browse-btn" onClick={() => navigate("/catalog")}>
+                                    Browse Catalog
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="account-list">
+                                {activeRentals.slice(0, 6).map((rental) => (
+                                    <article className="account-list-row" key={rental.rentalId}>
+                                        <img src={rental.image || "/placeholder-dvd.png"} alt={rental.name} className="account-list-image" />
+                                        <div className="account-list-content">
+                                            <strong>{rental.name}</strong>
+                                            <p>Qty: {rental.quantity}</p>
+                                            <p>Rented: {formatDateTime(rental.rentedAt)}</p>
+                                            <p>Due: {formatDateTime(rental.dueDate)}</p>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
                     </section>
 
                     {/* Rental History */}
                     <section className="account-section">
                         <h2 className="section-heading">Rental History</h2>
-                        <div className="empty-state">
-                            <span className="empty-icon">🎞️</span>
-                            <p>No rental history yet.</p>
-                            <small>Completed rentals will appear here for quick re-rents.</small>
-                        </div>
+                        {history.length === 0 ? (
+                            <div className="empty-state">
+                                <span className="empty-icon">🎞️</span>
+                                <p>No rental history yet.</p>
+                                <small>Completed rentals will appear here for quick re-rents.</small>
+                            </div>
+                        ) : (
+                            <div className="account-list">
+                                {history.slice(0, 8).map((entry) => (
+                                    <article className="account-list-row" key={entry.entryId}>
+                                        <img src={entry.image || "/placeholder-dvd.png"} alt={entry.name} className="account-list-image" />
+                                        <div className="account-list-content">
+                                            <strong>{entry.name}</strong>
+                                            <p>{entry.mode === "rent" ? "Rental" : "Purchase"} x{entry.quantity}</p>
+                                            <p>{formatDateTime(entry.date)}</p>
+                                            <p className="account-list-status">{entry.status}</p>
+                                        </div>
+                                        <div className="account-list-amount">
+                                            ${Number(entry.totalPrice || 0).toFixed(2)}
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
                     </section>
                 </div>
 

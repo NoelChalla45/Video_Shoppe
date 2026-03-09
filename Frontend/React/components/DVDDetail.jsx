@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/dvddetail.css";
+import { addItemToCart } from "../utils/cart";
+import { canAddRentalToCart } from "../utils/rentalRules";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -10,6 +12,10 @@ export default function DVDDetail() {
 
     const [movie, setMovie] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [feedback, setFeedback] = useState("");
+    const [error, setError] = useState("");
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const isEmployeeView = user?.role === "EMPLOYEE" || user?.role === "OWNER";
 
     useEffect(() => {
         const fetchMovie = async () => {
@@ -64,6 +70,23 @@ export default function DVDDetail() {
         const full = Math.floor(num);
         const half = num - full >= 0.5;
         return "★".repeat(full) + (half ? "½" : "") + "☆".repeat(Math.max(0, 5 - full - (half ? 1 : 0)));
+    };
+
+    const handleAction = (mode) => {
+        if (mode === "rent") {
+            const user = JSON.parse(localStorage.getItem("user") || "null");
+            const limitCheck = canAddRentalToCart(user, 1);
+            if (!limitCheck.allowed) {
+                setFeedback("");
+                setError(`You can only rent up to ${limitCheck.maxAllowed} DVDs at a time.`);
+                return;
+            }
+        }
+
+        addItemToCart(movie, mode);
+        setError("");
+        setFeedback(`${movie.name} added to cart for ${mode}.`);
+        navigate("/cart");
     };
 
     return (
@@ -137,13 +160,23 @@ export default function DVDDetail() {
                         </div>
 
                         <div className="dvd-actions">
-                            <button className="action-btn rent" disabled={isOutOfStock}>
-                                {isOutOfStock ? "Out of Stock" : "Rent Now"}
-                            </button>
-                            <button className="action-btn buy" disabled={isOutOfStock}>
-                                {isOutOfStock ? "Unavailable" : "Buy Now"}
-                            </button>
+                            {isEmployeeView ? (
+                                <p className="dvd-staff-note">
+                                    Employee view: browsing + stock visibility only. Renting and buying are customer-only actions.
+                                </p>
+                            ) : (
+                                <>
+                                    <button className="action-btn rent" disabled={isOutOfStock} onClick={() => handleAction("rent")}>
+                                        {isOutOfStock ? "Out of Stock" : "Rent Now"}
+                                    </button>
+                                    <button className="action-btn buy" disabled={isOutOfStock} onClick={() => handleAction("buy")}>
+                                        {isOutOfStock ? "Unavailable" : "Buy Now"}
+                                    </button>
+                                </>
+                            )}
                         </div>
+                        {feedback && <p className="dvd-feedback">{feedback}</p>}
+                        {error && <p className="dvd-error">{error}</p>}
                     </div>
                 </div>
             </div>

@@ -115,7 +115,8 @@
   color: var(--text-muted);
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
   border: 1px solid var(--line-soft);
   background: rgba(246, 240, 221, 0.05);
   color: var(--cream-100);
@@ -130,7 +131,8 @@
   color: rgba(246, 240, 221, 0.45);
 }
 
-.input-group input:focus {
+.input-group input:focus,
+.input-group select:focus {
   border-color: var(--teal-400);
   background: rgba(53, 184, 167, 0.08);
   box-shadow: 0 0 0 3px rgba(53, 184, 167, 0.22);

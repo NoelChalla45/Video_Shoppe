@@ -349,6 +349,18 @@ input:checked + .slider:before {
   margin-top: 1.4rem;
 }
 
+.catalog-feedback {
+  margin: 0.75rem 0 0;
+  color: #86f7d4;
+  font-size: 0.8rem;
+}
+
+.catalog-error {
+  margin: 0.45rem 0 0;
+  color: #ffb0b6;
+  font-size: 0.8rem;
+}
+
 .nav-btn {
   border: 1px solid var(--line-soft);
   background: rgba(246, 240, 221, 0.08);

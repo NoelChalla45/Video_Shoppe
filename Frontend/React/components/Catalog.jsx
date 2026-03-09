@@ -178,9 +178,6 @@ export default function Catalog() {
                     <h3>{product.name}</h3>
                     <p className="category-label">{product.category || "Featured"}</p>
                     <p className="price">${displayPrice} {!isBuyMode && <small>/day</small>}</p>
-                    <button className={`add-btn ${isOutOfStock ? "is-disabled" : ""}`} disabled={isOutOfStock}>
-                      {isOutOfStock ? "Out of Stock" : (isBuyMode ? "Buy Now" : "Rent Now")}
-                    </button>
                   </div>
                 );
               })

@@ -45,7 +45,13 @@ const Login = () => {
 
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-            navigate("/home");
+            if (data.user?.role === "OWNER") {
+                navigate("/owner");
+            } else if (data.user?.role === "EMPLOYEE") {
+                navigate("/employee");
+            } else {
+                navigate("/home");
+            }
         } catch (err) {
             setError("Could not reach the server. Is the backend running?");
             setIsLoading(false);

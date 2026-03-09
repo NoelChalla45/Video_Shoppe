@@ -4,6 +4,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 export default function Navbar() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "null");
+    const isOwnerView = user?.role === "OWNER";
+    const isEmployeeView = user?.role === "EMPLOYEE";
 
     const getInitials = (currentUser) => {
         if (!currentUser) return "?";
@@ -23,17 +25,24 @@ export default function Navbar() {
 
     return (
         <nav className="navbar">
-            <NavLink to="/home" className="brand-link" aria-label="Video Shoppe home">
+            <NavLink to={isOwnerView ? "/owner" : isEmployeeView ? "/employee" : "/home"} className="brand-link" aria-label="Video Shoppe home">
                 <span className="brand-icon">VS</span>
                 <span className="logo">Video Shoppe</span>
             </NavLink>
 
             <ul className="nav-links">
-                <li><NavLink to="/home" className={navClass}>Home</NavLink></li>
+                {!isOwnerView && !isEmployeeView && <li><NavLink to="/home" className={navClass}>Home</NavLink></li>}
                 <li><NavLink to="/catalog" className={navClass}>DVD Catalog</NavLink></li>
-                <li><NavLink to="/alerts" className={navClass}>Rental Alerts</NavLink></li>
-                <li><NavLink to="/account" className={navClass}>Account</NavLink></li>
-                <li><NavLink to="/cart" className={navClass}>Cart</NavLink></li>
+                {isEmployeeView && <li><NavLink to="/employee" className={navClass}>Employee</NavLink></li>}
+                {isEmployeeView && <li><NavLink to="/inventory" className={navClass}>Inventory</NavLink></li>}
+                {isEmployeeView && <li><NavLink to="/customer-activity" className={navClass}>Customer Activity</NavLink></li>}
+                {isOwnerView && <li><NavLink to="/owner" className={navClass}>Owner</NavLink></li>}
+                {isOwnerView && <li><NavLink to="/owner/stock" className={navClass}>DVDs In Stock</NavLink></li>}
+                {isOwnerView && <li><NavLink to="/owner/inventory" className={navClass}>DVD Inventory</NavLink></li>}
+                {isOwnerView && <li><NavLink to="/owner/employees" className={navClass}>Employee Accounts</NavLink></li>}
+                {!isOwnerView && !isEmployeeView && <li><NavLink to="/alerts" className={navClass}>Rental Alerts</NavLink></li>}
+                {!isOwnerView && !isEmployeeView && <li><NavLink to="/account" className={navClass}>Account</NavLink></li>}
+                {!isOwnerView && !isEmployeeView && <li><NavLink to="/cart" className={navClass}>Cart</NavLink></li>}
             </ul>
 
             <div className="nav-user">

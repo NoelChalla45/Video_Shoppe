@@ -1,14 +1,22 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
+function normalizeRole(inputRole) {
+  const role = String(inputRole || "CUSTOMER").toUpperCase();
+  if (role === "EMPLOYEE") return UserRole.EMPLOYEE;
+  if (role === "OWNER") return UserRole.OWNER;
+  return UserRole.CUSTOMER;
+}
+
 // ── Register ──────────────────────────────────────────────────
 router.post("/register", async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, role, phone, address, employmentType } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required." });
@@ -24,18 +32,27 @@ router.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+    const normalizedRole = normalizeRole(role);
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name: name || null },
+      data: {
+        email,
+        password: hashedPassword,
+        name: name || null,
+        role: normalizedRole,
+        phone: phone || null,
+        address: address || null,
+        employmentType: employmentType || null,
+      },
     });
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
     res.status(201).json({
       message: "Account created successfully.",
       token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -62,14 +79,14 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
     res.json({
       message: "Login successful.",
       token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -88,12 +105,65 @@ router.get("/me", async (req, res) => {
     const payload = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, email: true, name: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
     if (!user) return res.status(404).json({ error: "User not found." });
     res.json({ user });
   } catch {
     res.status(401).json({ error: "Invalid or expired token." });
+  }
+});
+
+// ── Owner: list employee accounts ─────────────────────────────
+router.get("/employees", requireAuth, requireRole(["OWNER"]), async (req, res) => {
+  try {
+    const employees = await prisma.user.findMany({
+      where: { role: UserRole.EMPLOYEE },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        address: true,
+        employmentType: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.json(employees);
+  } catch (err) {
+    console.error("List employees error:", err);
+    return res.status(500).json({ error: "Failed to fetch employee accounts." });
+  }
+});
+
+// ── Owner: employee account detail ────────────────────────────
+router.get("/employees/:id", requireAuth, requireRole(["OWNER"]), async (req, res) => {
+  try {
+    const employee = await prisma.user.findFirst({
+      where: { id: req.params.id, role: UserRole.EMPLOYEE },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        address: true,
+        employmentType: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found." });
+    }
+    return res.json(employee);
+  } catch (err) {
+    console.error("Employee detail error:", err);
+    return res.status(500).json({ error: "Failed to fetch employee details." });
   }
 });
 

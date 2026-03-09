@@ -1,8 +1,27 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+function normalizeCheckoutItems(items = []) {
+  const grouped = new Map();
+
+  for (const raw of items) {
+    const id = Number.parseInt(raw?.id, 10);
+    const quantity = Number.parseInt(raw?.quantity, 10);
+
+    if (!Number.isInteger(id) || !Number.isInteger(quantity) || quantity <= 0) {
+      continue;
+    }
+
+    const current = grouped.get(id) || 0;
+    grouped.set(id, current + quantity);
+  }
+
+  return Array.from(grouped.entries()).map(([id, quantity]) => ({ id, quantity }));
+}
 
 // ── GET ALL DVDS (Catalog View) ───────────────────────────────
 router.get("/", async (req, res) => {
@@ -14,6 +33,87 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error("Error fetching all DVDs:", err);
     res.status(500).json({ error: "Failed to fetch inventory" });
+  }
+});
+
+// ── CHECKOUT (DECREMENT STOCK) ───────────────────────────────
+router.post("/checkout", async (req, res) => {
+  const normalizedItems = normalizeCheckoutItems(req.body?.items);
+
+  if (normalizedItems.length === 0) {
+    return res.status(400).json({ error: "Checkout items are required." });
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const ids = normalizedItems.map((item) => item.id);
+      const inventoryRows = await tx.inventory.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, name: true, stock: true },
+      });
+
+      const stockById = new Map(inventoryRows.map((row) => [row.id, row]));
+
+      for (const item of normalizedItems) {
+        const row = stockById.get(item.id);
+        if (!row) {
+          throw new Error(`NOT_FOUND:${item.id}`);
+        }
+        if (row.stock < item.quantity) {
+          throw new Error(`INSUFFICIENT_STOCK:${row.id}:${row.name}:${row.stock}:${item.quantity}`);
+        }
+      }
+
+      for (const item of normalizedItems) {
+        await tx.inventory.update({
+          where: { id: item.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+    });
+
+    return res.json({ message: "Checkout stock updated." });
+  } catch (err) {
+    const message = String(err?.message || "");
+
+    if (message.startsWith("NOT_FOUND:")) {
+      const [, id] = message.split(":");
+      return res.status(404).json({ error: `DVD ${id} was not found.` });
+    }
+
+    if (message.startsWith("INSUFFICIENT_STOCK:")) {
+      const [, id, name, stock, requested] = message.split(":");
+      return res.status(409).json({
+        error: `Not enough stock for "${name}" (ID ${id}). In stock: ${stock}, requested: ${requested}.`,
+      });
+    }
+
+    console.error("Checkout stock update error:", err);
+    return res.status(500).json({ error: "Failed to update stock for checkout." });
+  }
+});
+
+// ── EMPLOYEE RESTOCK ─────────────────────────────────────────
+router.post("/:id/restock", requireAuth, requireRole(["OWNER"]), async (req, res) => {
+  const id = Number.parseInt(req.params.id, 10);
+  const amount = Number.parseInt(req.body?.amount, 10);
+
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "Invalid inventory id." });
+  }
+  if (!Number.isInteger(amount) || amount <= 0) {
+    return res.status(400).json({ error: "Restock amount must be a positive integer." });
+  }
+
+  try {
+    const updated = await prisma.inventory.update({
+      where: { id },
+      data: { stock: { increment: amount } },
+    });
+    return res.json(updated);
+  } catch (err) {
+    console.error("Restock error:", err);
+    return res.status(404).json({ error: "DVD not found or restock failed." });
   }
 });
 
@@ -40,7 +140,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // ── ADD NEW DVD ───────────────────────────────────────────────
-router.post("/add", async (req, res) => {
+router.post("/add", requireAuth, requireRole(["OWNER"]), async (req, res) => {
   const { name, price, category, stock, year, rating, director, cast, image, description } = req.body;
 
   try {
@@ -67,7 +167,7 @@ router.post("/add", async (req, res) => {
 });
 
 // ── UPDATE DVD ────────────────────────────────────────────────
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, requireRole(["OWNER"]), async (req, res) => {
   const id = parseInt(req.params.id); 
 
   try {
@@ -87,7 +187,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // ── DELETE DVD ────────────────────────────────────────────────
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, requireRole(["OWNER"]), async (req, res) => {
   try {
     await prisma.inventory.delete({
       where: { id: parseInt(req.params.id) }, 
