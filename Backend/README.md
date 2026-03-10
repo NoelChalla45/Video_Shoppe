@@ -7,6 +7,8 @@ Node.js + Express API for Video Shoppe.
 - Inventory read endpoints for storefront and staff views
 - Owner-protected inventory write endpoints
 - Checkout and order persistence
+- Checkout contact validation and customer profile updates
+- Employee/owner customer activity lookup endpoints
 - Owner-protected employee account lookup endpoints
 
 ## Scripts
@@ -26,3 +28,8 @@ Node.js + Express API for Video Shoppe.
 
 ## Middleware
 - `src/middleware/auth.js` for authentication and role checks.
+
+## Behavior Notes
+- Customer registration requires a name, email, and password.
+- Customer checkout requires phone number and address; the backend uses the account name already on file.
+- Customer orders are the source of truth for account history, rental alerts, and employee customer activity views.

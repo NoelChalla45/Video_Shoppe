@@ -3,8 +3,8 @@
 Full-stack DVD rental and sales application with role-based access for customers, employees, and owners.
 
 ## Current Scope
-- Customer accounts: browse catalog, add rent/buy items to cart, checkout, view account activity.
-- Employee accounts: clock in/out, view stock, view customer purchase/rental activity.
+- Customer accounts: browse catalog, add rent/buy items to cart, checkout with required phone/address, view account activity, and track due-soon/overdue rental alerts.
+- Employee accounts: clock in/out, view stock, browse customer names, and drill into customer purchase/rental activity.
 - Owner accounts: view owner dashboard, view stock page, manage full inventory stock, view employee accounts and details.
 
 ## Tech Stack
@@ -42,8 +42,10 @@ Backend runs at `http://localhost:5000`.
 
 ## Notes
 - New self-registered accounts default to `CUSTOMER`.
+- New account registration requires a name.
 - Owner and employee roles should be assigned in the database.
 - Inventory stock updates are owner-only via the Owner Inventory page and protected backend routes.
+- Customer account activity and rental alerts are derived from persisted backend orders.
 
 ## Documentation
 - [Quickstart](docs/QUICKSTART.md)

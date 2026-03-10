@@ -9,11 +9,12 @@ The repository is organized by runtime concern:
 - `Documents/`: planning and analysis source documents.
 
 ## Key Role Split
-- Customer: shopping and account activity.
-- Employee: operations view (clock, stock visibility, customer activity visibility).
+- Customer: shopping, account activity, checkout contact info, and rental alerts.
+- Employee: operations view (clock, stock visibility, customer lookup, customer activity visibility).
 - Owner: governance and management views (stock and employee account management).
 
 ## Source of Truth
 - Inventory levels: backend database.
 - Orders and checkout: backend transactional endpoints.
 - Auth and role permissions: JWT + backend middleware.
+- Customer account history and rental alerts: backend orders.

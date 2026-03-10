@@ -21,13 +21,19 @@ Open:
 1. Register as a customer from `/login`.
 2. Browse DVDs in `/catalog`.
 3. Add rent/buy items from DVD detail page.
-4. Checkout in `/cart`.
-5. View activity in `/account`.
+4. Checkout in `/cart` with phone number and address.
+5. View order activity in `/account`.
+6. View due-soon and overdue rentals in `/alerts`.
 
 ## Employee and Owner Access
 Role controls are database-driven.
 - Employee routes: `/employee`, `/inventory`, `/customer-activity`
 - Owner routes: `/owner`, `/owner/stock`, `/owner/inventory`, `/owner/employees`
+
+## Current Behavior Notes
+- Customer registration requires a name.
+- Customer account activity and rental alerts are pulled from persisted backend orders.
+- Employee customer activity supports selecting a customer first, then viewing their details and activity.
 
 ## Useful Commands
 ```bash
