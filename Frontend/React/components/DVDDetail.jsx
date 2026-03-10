@@ -1,10 +1,12 @@
+// Detail page for a single DVD with rent and buy actions.
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/dvddetail.css";
 import { addItemToCart } from "../utils/cart";
+import { apiFetchJson } from "../utils/api";
+import { getStoredUser, getToken } from "../utils/auth";
+import { getActiveRentalQuantityFromOrders } from "../utils/orders";
 import { canAddRentalToCart } from "../utils/rentalRules";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function DVDDetail() {
     const { id } = useParams();
@@ -14,20 +16,28 @@ export default function DVDDetail() {
     const [loading, setLoading] = useState(true);
     const [feedback, setFeedback] = useState("");
     const [error, setError] = useState("");
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const [activeRentalQty, setActiveRentalQty] = useState(0);
+    const user = getStoredUser();
+    const token = getToken();
     const isEmployeeView = user?.role === "EMPLOYEE" || user?.role === "OWNER";
 
     useEffect(() => {
-        const fetchMovie = async () => {
+        const loadPageData = async () => {
             try {
-                const response = await fetch(`${API}/api/inventory/${id}`);
+                const movieData = await apiFetchJson(`/api/inventory/${id}`, { errorMessage: "Movie not found" });
+                setMovie(movieData);
 
-                if (!response.ok) {
-                    throw new Error("Movie not found");
+                if (token && !isEmployeeView) {
+                    try {
+                        const orders = await apiFetchJson("/api/orders/mine", {
+                            token,
+                            errorMessage: "Failed to load rental limits.",
+                        });
+                        setActiveRentalQty(getActiveRentalQuantityFromOrders(orders));
+                    } catch (err) {
+                        setError(err.message || "Failed to load rental limits.");
+                    }
                 }
-
-                const data = await response.json();
-                setMovie(data);
             } catch (err) {
                 console.error("Fetch error details:", err);
                 setMovie(null);
@@ -36,8 +46,8 @@ export default function DVDDetail() {
             }
         };
 
-        if (id) fetchMovie();
-    }, [id]);
+        if (id) loadPageData();
+    }, [id, isEmployeeView, token]);
 
     if (loading) {
         return (
@@ -64,6 +74,7 @@ export default function DVDDetail() {
     const moviePrice = movie.price || 0;
     const buyPrice = (moviePrice * 5).toFixed(2);
 
+    // Convert the numeric movie rating into a simple star display.
     const renderStars = (rating) => {
         if (!rating) return "☆☆☆☆☆";
         const num = parseFloat(rating) / 2;
@@ -73,9 +84,9 @@ export default function DVDDetail() {
     };
 
     const handleAction = (mode) => {
+        // Only rentals need the rental-limit check.
         if (mode === "rent") {
-            const user = JSON.parse(localStorage.getItem("user") || "null");
-            const limitCheck = canAddRentalToCart(user, 1);
+            const limitCheck = canAddRentalToCart(activeRentalQty, 1);
             if (!limitCheck.allowed) {
                 setFeedback("");
                 setError(`You can only rent up to ${limitCheck.maxAllowed} DVDs at a time.`);

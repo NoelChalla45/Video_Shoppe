@@ -1,8 +1,10 @@
+// Employee dashboard with shift tracking and staff shortcuts.
 import { useEffect, useState } from "react";
 import "../styles/employee.css";
+import { getStoredUser } from "../utils/auth";
 
 export default function EmployeeDashboard() {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = getStoredUser();
   const clockStorageKey = `videoShoppeEmployeeClock_${user?.id || "unknown"}`;
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [shiftStart, setShiftStart] = useState(null);

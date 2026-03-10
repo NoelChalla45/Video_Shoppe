@@ -1,3 +1,4 @@
+// Local storage helpers for cart items.
 const CART_KEY = "videoShoppeCart_v2";
 
 export function getCartItems() {
@@ -17,6 +18,7 @@ export function saveCartItems(items) {
 
 export function addItemToCart(movie, mode = "rent") {
   const items = getCartItems();
+  // Buying uses the store's fixed 5x rental-price rule.
   const unitPrice = mode === "buy" ? Number(movie.price || 0) * 5 : Number(movie.price || 0);
   const itemKey = `${movie.id}-${mode}`;
   const existingIndex = items.findIndex((item) => item.itemKey === itemKey);

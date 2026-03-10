@@ -1,3 +1,4 @@
+// JWT auth middleware for protected backend routes.
 import jwt from "jsonwebtoken";
 
 export function requireAuth(req, res, next) {
@@ -18,6 +19,7 @@ export function requireAuth(req, res, next) {
 
 export function requireRole(allowedRoles = []) {
   return (req, res, next) => {
+    // Only allow users whose token role matches the route rules.
     if (!req.user?.role) {
       return res.status(403).json({ error: "Role not present on token." });
     }

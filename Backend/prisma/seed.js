@@ -1,3 +1,4 @@
+// Seed script that loads starter inventory into the database.
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -65,6 +66,7 @@ const products = [
 ];
 
 async function main() {
+  // Reset inventory so the seed always starts from a clean slate.
   console.log('Cleaning database...');
   await prisma.inventory.deleteMany(); 
 

@@ -1,9 +1,11 @@
+// Owner dashboard with quick links to admin pages.
 import { useNavigate } from "react-router-dom";
 import "../styles/owner.css";
+import { getStoredUser } from "../utils/auth";
 
 export default function OwnerDashboard() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = getStoredUser();
 
   return (
     <div className="owner-page">

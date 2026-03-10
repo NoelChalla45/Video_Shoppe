@@ -1,10 +1,11 @@
+// Owner-only inventory management page.
 import { useEffect, useMemo, useState } from "react";
 import "../styles/owner.css";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { apiFetchJson } from "../utils/api";
+import { getToken } from "../utils/auth";
 
 export default function OwnerInventory() {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,9 +19,9 @@ export default function OwnerInventory() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/inventory`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load inventory.");
+      const data = await apiFetchJson("/api/inventory", {
+        errorMessage: "Failed to load inventory.",
+      });
       setInventory(data);
     } catch (err) {
       setError(err.message || "Failed to load inventory.");
@@ -53,18 +54,12 @@ export default function OwnerInventory() {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`${API}/api/inventory/${dvdId}`, {
+      const data = await apiFetchJson(`/api/inventory/${dvdId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        token,
         body: JSON.stringify({ stock: parsed }),
+        errorMessage: "Failed to update stock.",
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to update stock.");
-      }
 
       setInventory((prev) => prev.map((item) => (item.id === dvdId ? data : item)));
       setStockDrafts((prev) => ({ ...prev, [dvdId]: String(data.stock) }));

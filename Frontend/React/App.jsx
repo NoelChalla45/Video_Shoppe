@@ -1,3 +1,4 @@
+// Main app router and shared page layout.
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./components/Login";
 import Hero from "./components/Hero";
@@ -16,6 +17,8 @@ import OwnerInventory from "./components/OwnerInventory";
 import OwnerEmployees from "./components/OwnerEmployees";
 import LandingPage from "./components/LandingPage";
 import CatalogPreview from "./components/CatalogPreview";
+import RentalAlerts from "./components/RentalAlerts";
+import { getHomeRoute, getStoredUser, isAuthenticated } from "./utils/auth";
 
 function ComingSoon({ title }) {
   return (
@@ -29,20 +32,21 @@ function ComingSoon({ title }) {
 }
 
 function PrivateRoute({ children }) {
-  return localStorage.getItem("token") ? children : <Navigate to="/login" replace />;
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
 
 function RoleRoute({ allowedRoles, children }) {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = getStoredUser();
   if (!user) return <Navigate to="/login" replace />;
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to={user.role === "OWNER" ? "/owner" : user.role === "EMPLOYEE" ? "/employee" : "/home"} replace />;
+    return <Navigate to={getHomeRoute(user.role)} replace />;
   }
   return children;
 }
 
 function Layout() {
   const location = useLocation();
+  // Hide the shared navbar and footer on public-facing pages.
   const isPublicLanding = location.pathname === "/";
   const isLoginPage = location.pathname === "/login";
   const isCatalogPreviewPage = location.pathname === "/catalog-preview";
@@ -79,7 +83,7 @@ function Layout() {
             path="/alerts"
             element={
               <RoleRoute allowedRoles={["CUSTOMER"]}>
-                <ComingSoon title="Rental Alerts" />
+                <RentalAlerts />
               </RoleRoute>
             }
           />

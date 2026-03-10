@@ -1,5 +1,7 @@
+// Public landing page for the storefront.
 import { Link } from "react-router-dom";
 import "../styles/landing.css";
+import { isAuthenticated } from "../utils/auth";
 
 const FEATURED_STRIPS = [
   {
@@ -22,7 +24,7 @@ const FEATURED_STRIPS = [
 const GENRES = ["Action", "Horror", "Sci-Fi", "Comedy", "Anime", "Drama", "Thriller", "Family"];
 
 export default function LandingPage() {
-  const isLoggedIn = Boolean(localStorage.getItem("token"));
+  const isLoggedIn = isAuthenticated();
 
   return (
     <div className="landing-page">

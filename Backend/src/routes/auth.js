@@ -1,12 +1,14 @@
+// Authentication routes plus owner-only employee lookups.
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { PrismaClient, UserRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
+import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
+// Normalize incoming role values before saving them.
 function normalizeRole(inputRole) {
   const role = String(inputRole || "CUSTOMER").toUpperCase();
   if (role === "EMPLOYEE") return UserRole.EMPLOYEE;
@@ -17,9 +19,10 @@ function normalizeRole(inputRole) {
 // ── Register ──────────────────────────────────────────────────
 router.post("/register", async (req, res) => {
   const { email, password, name, role, phone, address, employmentType } = req.body;
+  const normalizedName = String(name || "").trim();
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required." });
+  if (!email || !password || !normalizedName) {
+    return res.status(400).json({ error: "Name, email, and password are required." });
   }
   if (password.length < 6) {
     return res.status(400).json({ error: "Password must be at least 6 characters." });
@@ -37,7 +40,7 @@ router.post("/register", async (req, res) => {
       data: {
         email,
         password: hashedPassword,
-        name: name || null,
+        name: normalizedName,
         role: normalizedRole,
         phone: phone || null,
         address: address || null,
@@ -45,6 +48,7 @@ router.post("/register", async (req, res) => {
       },
     });
 
+    // Return a signed token so the frontend can stay logged in.
     const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -52,7 +56,7 @@ router.post("/register", async (req, res) => {
     res.status(201).json({
       message: "Account created successfully.",
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, address: user.address },
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -79,6 +83,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
+    // Return the same token shape used during registration.
     const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -86,7 +91,7 @@ router.post("/login", async (req, res) => {
     res.json({
       message: "Login successful.",
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, address: user.address },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -95,22 +100,17 @@ router.post("/login", async (req, res) => {
 });
 
 // ── Get current user (protected) ──────────────────────────────
-router.get("/me", async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token provided." });
-  }
-
+router.get("/me", requireAuth, async (req, res) => {
   try {
-    const payload = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
+      where: { id: req.user.userId },
+      select: { id: true, email: true, name: true, role: true, phone: true, address: true, createdAt: true },
     });
     if (!user) return res.status(404).json({ error: "User not found." });
     res.json({ user });
-  } catch {
-    res.status(401).json({ error: "Invalid or expired token." });
+  } catch (err) {
+    console.error("Fetch current user error:", err);
+    res.status(500).json({ error: "Failed to load current user." });
   }
 });
 

@@ -1,12 +1,7 @@
-import { getAccountActivity } from "./accountActivity";
+// Shared rental-limit rules used by the customer flow.
 import { getCartItems } from "./cart";
 
 export const MAX_RENTALS_ALLOWED = 3;
-
-function getActiveRentalQuantity(user) {
-  const { activeRentals } = getAccountActivity(user);
-  return activeRentals.reduce((sum, rental) => sum + Number(rental.quantity || 0), 0);
-}
 
 function getCartRentalQuantity() {
   const items = getCartItems();
@@ -15,8 +10,7 @@ function getCartRentalQuantity() {
     .reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 }
 
-export function canAddRentalToCart(user, nextQuantity = 1) {
-  const activeRentalQty = getActiveRentalQuantity(user);
+export function canAddRentalToCart(activeRentalQty = 0, nextQuantity = 1) {
   const cartRentalQty = getCartRentalQuantity();
   const projectedTotal = activeRentalQty + cartRentalQty + Number(nextQuantity || 0);
 
@@ -27,8 +21,7 @@ export function canAddRentalToCart(user, nextQuantity = 1) {
   };
 }
 
-export function canCheckoutRentals(user) {
-  const activeRentalQty = getActiveRentalQuantity(user);
+export function canCheckoutRentals(activeRentalQty = 0) {
   const cartRentalQty = getCartRentalQuantity();
   const projectedTotal = activeRentalQty + cartRentalQty;
 

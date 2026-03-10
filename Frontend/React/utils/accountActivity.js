@@ -1,3 +1,4 @@
+// Local storage helpers for temporary customer account activity.
 const ACCOUNT_ACTIVITY_KEY = "videoShoppeAccountActivity_v5";
 
 function getStorage() {
@@ -45,6 +46,7 @@ export function recordCheckout(user, cartItems) {
   const newActiveRentals = [];
   const newHistory = [];
 
+  // Rentals stay active and also get copied into history.
   cartItems.forEach((item) => {
     const historyEntry = {
       entryId: `${item.itemKey}-${nowIso}`,

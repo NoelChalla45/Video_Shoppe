@@ -1,8 +1,9 @@
+// Login and registration screen for all user roles.
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/login.css";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { apiFetchJson } from "../utils/api";
+import { getHomeRoute, setAuthSession } from "../utils/auth";
 
 const Login = () => {
     const location = useLocation();
@@ -14,6 +15,7 @@ const Login = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
+    // Allow the landing page to open this screen in register mode.
     useEffect(() => {
         if (location.state?.mode === "register") {
             setMode("register");
@@ -25,35 +27,21 @@ const Login = () => {
         setError("");
         setIsLoading(true);
 
+        // Switch between login and registration endpoints.
         const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-        const body = mode === "login" ? { email, password } : { email, password, name };
+        const body = mode === "login" ? { email, password } : { email, password, name: name.trim() };
 
         try {
-            const res = await fetch(`${API}${endpoint}`, {
+            const data = await apiFetchJson(endpoint, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
+                errorMessage: "Something went wrong.",
             });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                setError(data.error || "Something went wrong.");
-                setIsLoading(false);
-                return;
-            }
-
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            if (data.user?.role === "OWNER") {
-                navigate("/owner");
-            } else if (data.user?.role === "EMPLOYEE") {
-                navigate("/employee");
-            } else {
-                navigate("/home");
-            }
+            setAuthSession(data.token, data.user);
+            navigate(getHomeRoute(data.user?.role));
         } catch (err) {
-            setError("Could not reach the server. Is the backend running?");
+            setError(err.message || "Could not reach the server. Is the backend running?");
             setIsLoading(false);
         }
     };
@@ -96,12 +84,13 @@ const Login = () => {
                 <form className="login-form" onSubmit={handleSubmit}>
                     {mode === "register" && (
                         <div className="input-group">
-                            <label>Name <span className="optional">(optional)</span></label>
+                            <label>Name</label>
                             <input
                                 type="text"
                                 placeholder="John Doe"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                required
                             />
                         </div>
                     )}

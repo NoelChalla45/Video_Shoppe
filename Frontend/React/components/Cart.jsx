@@ -1,18 +1,29 @@
-import { useMemo, useState } from "react";
+// Shopping cart page for rentals and purchases before checkout.
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/cart.css";
 import { clearCartItems, getCartItems, removeCartItem } from "../utils/cart";
-import { recordCheckout } from "../utils/accountActivity";
+import { apiFetchJson } from "../utils/api";
+import { getStoredUser, getToken } from "../utils/auth";
+import { getActiveRentalQuantityFromOrders } from "../utils/orders";
 import { canCheckoutRentals } from "../utils/rentalRules";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Cart() {
   const navigate = useNavigate();
+  const user = getStoredUser();
+  const userId = user?.id || "";
+  const token = getToken();
   const [items, setItems] = useState(getCartItems());
+  const [checkoutForm, setCheckoutForm] = useState({
+    phone: user?.phone || "",
+    address: user?.address || "",
+  });
   const [checkoutError, setCheckoutError] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [activeRentalQty, setActiveRentalQty] = useState(0);
+  const [isLoadingRentalState, setIsLoadingRentalState] = useState(true);
 
+  // Build the order summary values shown in the sidebar.
   const totals = useMemo(() => {
     return items.reduce(
       (acc, item) => {
@@ -26,6 +37,43 @@ export default function Cart() {
     );
   }, [items]);
 
+  useEffect(() => {
+    const loadOrders = async () => {
+      if (!token || !user) {
+        setActiveRentalQty(0);
+        setIsLoadingRentalState(false);
+        return;
+      }
+
+      setIsLoadingRentalState(true);
+
+      try {
+        const [profileResponse, orders] = await Promise.all([
+          apiFetchJson("/api/auth/me", {
+            token,
+            errorMessage: "Failed to load checkout details.",
+          }),
+          apiFetchJson("/api/orders/mine", {
+            token,
+            errorMessage: "Failed to load active rentals.",
+          }),
+        ]);
+
+        setCheckoutForm({
+          phone: profileResponse.user?.phone || user?.phone || "",
+          address: profileResponse.user?.address || user?.address || "",
+        });
+        setActiveRentalQty(getActiveRentalQuantityFromOrders(orders));
+      } catch (err) {
+        setCheckoutError(err.message || "Failed to load checkout details.");
+      } finally {
+        setIsLoadingRentalState(false);
+      }
+    };
+
+    loadOrders();
+  }, [token, userId]);
+
   const handleRemove = (itemKey) => {
     const next = removeCartItem(itemKey);
     setItems(next);
@@ -37,46 +85,43 @@ export default function Cart() {
   };
 
   const handleCheckout = async () => {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
     if (!user || items.length === 0 || isCheckingOut) return;
+
+    const phone = checkoutForm.phone.trim();
+    const address = checkoutForm.address.trim();
 
     setCheckoutError("");
     setIsCheckingOut(true);
 
     try {
-      const limitCheck = canCheckoutRentals(user);
+      if (!phone || !address) {
+        setCheckoutError("Phone number and address are required before checkout.");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      const limitCheck = canCheckoutRentals(activeRentalQty);
       if (!limitCheck.allowed) {
         setCheckoutError(`You can only rent up to ${limitCheck.maxAllowed} DVDs at a time.`);
         setIsCheckingOut(false);
         return;
       }
 
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/api/orders/checkout`, {
+      await apiFetchJson("/api/orders/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        token,
         body: JSON.stringify({
+          contact: { phone, address },
           items: items.map((item) => ({ id: item.id, quantity: item.quantity, mode: item.mode })),
         }),
+        errorMessage: "Checkout failed. Please try again.",
       });
 
-      const payload = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        setCheckoutError(payload.error || "Checkout failed. Please try again.");
-        setIsCheckingOut(false);
-        return;
-      }
-
-      recordCheckout(user, items);
       clearCartItems();
       setItems([]);
       navigate("/account");
-    } catch {
-      setCheckoutError("Could not reach server to complete checkout.");
+    } catch (err) {
+      setCheckoutError(err.message || "Could not reach server to complete checkout.");
       setIsCheckingOut(false);
     }
   };
@@ -140,8 +185,30 @@ export default function Cart() {
                 <span>Subtotal</span>
                 <span>${totals.subtotal.toFixed(2)}</span>
               </div>
-              <button className="cart-primary-btn" onClick={handleCheckout} disabled={isCheckingOut}>
-                {isCheckingOut ? "Processing..." : "Checkout"}
+              <div className="cart-checkout-fields">
+                <div className="cart-field">
+                  <label htmlFor="checkout-phone">Phone Number</label>
+                  <input
+                    id="checkout-phone"
+                    type="tel"
+                    value={checkoutForm.phone}
+                    onChange={(e) => setCheckoutForm((prev) => ({ ...prev, phone: e.target.value }))}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div className="cart-field">
+                  <label htmlFor="checkout-address">Address</label>
+                  <textarea
+                    id="checkout-address"
+                    value={checkoutForm.address}
+                    onChange={(e) => setCheckoutForm((prev) => ({ ...prev, address: e.target.value }))}
+                    placeholder="123 Main St, City, State ZIP"
+                    rows="3"
+                  />
+                </div>
+              </div>
+              <button className="cart-primary-btn" onClick={handleCheckout} disabled={isCheckingOut || isLoadingRentalState}>
+                {isLoadingRentalState ? "Loading..." : isCheckingOut ? "Processing..." : "Checkout"}
               </button>
               <button className="cart-secondary-btn full" onClick={handleClear}>
                 Clear Cart

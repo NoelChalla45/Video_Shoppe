@@ -1,10 +1,11 @@
+// Inventory routes for catalog browsing and owner updates.
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
+// Group duplicate checkout items so stock is checked once per DVD.
 function normalizeCheckoutItems(items = []) {
   const grouped = new Map();
 
@@ -54,6 +55,7 @@ router.post("/checkout", async (req, res) => {
 
       const stockById = new Map(inventoryRows.map((row) => [row.id, row]));
 
+      // Validate stock before applying any updates.
       for (const item of normalizedItems) {
         const row = stockById.get(item.id);
         if (!row) {
@@ -64,6 +66,7 @@ router.post("/checkout", async (req, res) => {
         }
       }
 
+      // Decrement stock for each checked-out title.
       for (const item of normalizedItems) {
         await tx.inventory.update({
           where: { id: item.id },

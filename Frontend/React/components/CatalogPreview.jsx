@@ -1,3 +1,4 @@
+// Public preview of the catalog shown before login.
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import "../styles/catalog-preview.css";

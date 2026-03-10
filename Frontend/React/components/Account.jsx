@@ -1,17 +1,48 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// Customer account page with profile, rentals, and history.
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import "../styles/account.css";
-import { getAccountActivity } from "../utils/accountActivity";
+import { apiFetchJson } from "../utils/api";
+import { getStoredUser, getToken } from "../utils/auth";
+import { getAccountActivityFromOrders } from "../utils/orders";
 
 export default function Account() {
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    const [accountActivity] = useState(() => getAccountActivity(user));
+    const user = getStoredUser();
+    const userId = user?.id || "";
+    const token = getToken();
+    const [profile, setProfile] = useState(user);
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    if (!user) {
-        navigate("/login");
-        return null;
-    }
+    useEffect(() => {
+        if (!user || !token) {
+            setLoading(false);
+            return;
+        }
+
+        const loadAccount = async () => {
+            setLoading(true);
+            setError("");
+
+            try {
+                const [meResponse, ordersResponse] = await Promise.all([
+                    apiFetchJson("/api/auth/me", { token, errorMessage: "Failed to load profile." }),
+                    apiFetchJson("/api/orders/mine", { token, errorMessage: "Failed to load order history." }),
+                ]);
+
+                setProfile(meResponse.user || user);
+                setOrders(Array.isArray(ordersResponse) ? ordersResponse : []);
+            } catch (err) {
+                setError(err.message || "Failed to load account data.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadAccount();
+    }, [token, userId]);
 
     const getInitials = (user) => {
         if (user.name) {
@@ -20,8 +51,11 @@ export default function Account() {
         return user.email[0].toUpperCase();
     };
 
-    const displayName = user.name || "Member";
-    const memberSince = "February 2026"; // placeholder until we store createdAt on frontend
+    const accountActivity = useMemo(() => getAccountActivityFromOrders(orders), [orders]);
+    const displayName = profile?.name || "Member";
+    const memberSince = profile?.createdAt
+        ? new Date(profile.createdAt).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+        : "Recently joined";
     const activeRentals = accountActivity.activeRentals || [];
     const history = accountActivity.history || [];
     const totalRented = history
@@ -33,6 +67,22 @@ export default function Account() {
         if (!dateValue) return "N/A";
         return new Date(dateValue).toLocaleString();
     };
+
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (loading) {
+        return (
+            <div className="account-page">
+                <div className="account-inner">
+                    <div className="empty-state">
+                        <p>Loading your account...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="account-page">
@@ -51,10 +101,10 @@ export default function Account() {
                 <div className="account-summary">
                     {/* Profile Card */}
                     <div className="profile-card">
-                        <div className="profile-avatar">{getInitials(user)}</div>
+                        <div className="profile-avatar">{getInitials(profile || user)}</div>
                         <div className="profile-info">
                             <h1 className="profile-name">{displayName}</h1>
-                            <p className="profile-email">{user.email}</p>
+                            <p className="profile-email">{profile?.email || user.email}</p>
                             <span className="member-badge">🎬 Member since {memberSince}</span>
                         </div>
                         <button className="edit-btn">Edit Profile</button>
@@ -67,7 +117,7 @@ export default function Account() {
                             <span className="stat-label">ACTIVE RENTALS</span>
                         </div>
                         <div className="stat-card">
-                            <span className="stat-num">3</span>
+                            <span className="stat-num">{accountActivity.maxRentalsAllowed}</span>
                             <span className="stat-label">MAX RENTALS ALLOWED</span>
                         </div>
                         <div className="stat-card">
@@ -141,6 +191,8 @@ export default function Account() {
                     </section>
                 </div>
 
+                {error && <p className="account-list-status">{error}</p>}
+
                 {/* Account Settings */}
                 <section className="account-section settings-section">
                     <h2 className="section-heading">Account Settings</h2>
@@ -148,7 +200,7 @@ export default function Account() {
                         <div className="settings-row">
                             <div>
                                 <p className="settings-label">Email Address</p>
-                                <p className="settings-value">{user.email}</p>
+                                <p className="settings-value">{profile?.email || user.email}</p>
                             </div>
                             <button className="settings-btn">Change</button>
                         </div>

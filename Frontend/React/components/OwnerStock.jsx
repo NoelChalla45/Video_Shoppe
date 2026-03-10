@@ -1,7 +1,7 @@
+// Owner stock page focused on counts and availability.
 import { useEffect, useMemo, useState } from "react";
 import "../styles/owner.css";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { apiFetchJson } from "../utils/api";
 
 export default function OwnerStock() {
   const [inventory, setInventory] = useState([]);
@@ -15,9 +15,9 @@ export default function OwnerStock() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${API}/api/inventory`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to load stock.");
+        const data = await apiFetchJson("/api/inventory", {
+          errorMessage: "Failed to load stock.",
+        });
         setInventory(data);
       } catch (err) {
         setError(err.message || "Failed to load stock.");

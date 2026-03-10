@@ -1,7 +1,7 @@
+// Employee inventory page for browsing current stock.
 import { useEffect, useState } from "react";
 import "../styles/employee.css";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { apiFetchJson } from "../utils/api";
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([]);
@@ -15,11 +15,9 @@ export default function Inventory() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${API}/api/inventory`);
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to load inventory.");
-        }
+        const data = await apiFetchJson("/api/inventory", {
+          errorMessage: "Failed to load inventory.",
+        });
         setInventory(data);
       } catch (err) {
         setError(err.message || "Failed to load inventory.");

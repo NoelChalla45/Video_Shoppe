@@ -1,8 +1,8 @@
+// Catalog page with search, filters, and paging.
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/catalog.css';
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { apiFetchJson } from "../utils/api";
 const CATEGORIES = ["New Releases", "Highest Rated", "Classics", "Family & Kids", "Action", "Comedy", "Mystery & Thriller", "Sci-Fi"];
 
 export default function Catalog() {
@@ -17,12 +17,11 @@ export default function Catalog() {
   const [maxPrice, setMaxPrice] = useState(100);
   const [showInStockOnly, setShowInStockOnly] = useState(false);
 
+  // Load the inventory list when the page first opens.
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API}/api/inventory`);
-        if (!response.ok) throw new Error("Failed to fetch");
-        const data = await response.json();
+        const data = await apiFetchJson("/api/inventory", { errorMessage: "Failed to fetch inventory." });
         const sortedData = data.sort((a, b) => a.id - b.id);
 
         setProducts(sortedData);
@@ -43,6 +42,7 @@ export default function Catalog() {
 
   const itemsPerPage = 6;
 
+  // Apply all active filters before paging the results.
   const filteredProducts = products.filter((product) => {
     const currentPrice = isBuyMode ? product.price * 5 : product.price;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());

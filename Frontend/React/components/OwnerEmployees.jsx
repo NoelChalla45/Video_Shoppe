@@ -1,10 +1,11 @@
+// Owner page for viewing employee account information.
 import { useEffect, useState } from "react";
 import "../styles/owner.css";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { apiFetchJson } from "../utils/api";
+import { getToken } from "../utils/auth";
 
 export default function OwnerEmployees() {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   const [employees, setEmployees] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,11 +16,10 @@ export default function OwnerEmployees() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${API}/api/auth/employees`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const data = await apiFetchJson("/api/auth/employees", {
+          token,
+          errorMessage: "Failed to load employees.",
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to load employees.");
         setEmployees(data);
       } catch (err) {
         setError(err.message || "Failed to load employees.");
@@ -34,11 +34,10 @@ export default function OwnerEmployees() {
   const openEmployeeDetail = async (employeeId) => {
     setError("");
     try {
-      const res = await fetch(`${API}/api/auth/employees/${employeeId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const data = await apiFetchJson(`/api/auth/employees/${employeeId}`, {
+        token,
+        errorMessage: "Failed to load employee details.",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load employee details.");
       setSelected(data);
     } catch (err) {
       setError(err.message || "Failed to load employee details.");

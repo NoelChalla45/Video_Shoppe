@@ -1,9 +1,11 @@
+// Shared navigation that changes links based on the signed-in role.
 import "../styles/navbar.css";
 import { NavLink, useNavigate } from "react-router-dom";
+import { clearAuthSession, getHomeRoute, getStoredUser } from "../utils/auth";
 
 export default function Navbar() {
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const user = getStoredUser();
     const isOwnerView = user?.role === "OWNER";
     const isEmployeeView = user?.role === "EMPLOYEE";
 
@@ -16,8 +18,7 @@ export default function Navbar() {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        clearAuthSession();
         navigate("/login");
     };
 
@@ -25,7 +26,7 @@ export default function Navbar() {
 
     return (
         <nav className="navbar">
-            <NavLink to={isOwnerView ? "/owner" : isEmployeeView ? "/employee" : "/home"} className="brand-link" aria-label="Video Shoppe home">
+            <NavLink to={getHomeRoute(user?.role)} className="brand-link" aria-label="Video Shoppe home">
                 <span className="brand-icon">VS</span>
                 <span className="logo">Video Shoppe</span>
             </NavLink>

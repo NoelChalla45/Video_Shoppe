@@ -1,5 +1,7 @@
+// Customer home page hero section after login.
 import { useNavigate } from "react-router-dom";
 import "../styles/hero.css";
+import { getStoredUser } from "../utils/auth";
 
 const FEATURED = [
     { title: "Inception", year: 2010, genre: "Sci-Fi / Thriller", rating: "8.8", img: "https://s3.amazonaws.com/nightjarprod/content/uploads/sites/130/2021/08/19090041/9gk7adHYeDvHkCSEqAvQNLV5Uge-scaled.jpg" },
@@ -12,7 +14,7 @@ const FEATURED = [
 
 export default function Hero() {
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const user = getStoredUser();
     const firstName = user?.name ? user.name.split(" ")[0] : null;
 
     return (
