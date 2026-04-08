@@ -1,5 +1,7 @@
 // Main app router and shared page layout.
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 import Login from "./components/Login";
 import Hero from "./components/Hero";
 import Navbar from "./components/Navbar";
@@ -18,7 +20,9 @@ import OwnerEmployees from "./components/OwnerEmployees";
 import LandingPage from "./components/LandingPage";
 import CatalogPreview from "./components/CatalogPreview";
 import RentalAlerts from "./components/RentalAlerts";
+import CheckoutSuccess from "./components/CheckoutSuccess";
 import { getHomeRoute, getStoredUser, isAuthenticated } from "./utils/auth";
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function ComingSoon({ title }) {
   return (
@@ -96,6 +100,14 @@ function Layout() {
             }
           />
           <Route
+            path="/checkout/success"
+            element={
+              <RoleRoute allowedRoles={["CUSTOMER"]}>
+                <CheckoutSuccess />
+              </RoleRoute>
+            }
+          />
+          <Route
             path="/employee"
             element={
               <RoleRoute allowedRoles={["EMPLOYEE"]}>
@@ -162,9 +174,11 @@ function Layout() {
 
 function App() {
   return (
-    <Router>
-      <Layout />
-    </Router>
+    <Elements stripe={stripePromise}>
+      <Router>
+        <Layout />
+      </Router>
+    </Elements>
   );
 }
 
