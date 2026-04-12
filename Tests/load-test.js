@@ -1,3 +1,5 @@
+// npm install --save-dev @types/k6 
+// To run: k6 run "filename".js
 import http from 'k6/http';
 import { sleep } from 'k6';
 
