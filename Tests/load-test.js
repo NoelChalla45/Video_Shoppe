@@ -2,11 +2,11 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 
 export const options = {
-  vus: 10,           // number of virtual users
-  duration: '30s',   // how long to run the test
+  vus: 10,           
+  duration: '30s',   
 };
 
 export default function () {
-  http.get('http://localhost:5173');  // home page URL
-  sleep(1);                           // wait 1s before next request
+  http.get('http://localhost:5173'); 
+  sleep(1);                           
 }
