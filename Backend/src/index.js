@@ -39,6 +39,6 @@ app.get("/api/health", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`📦 Server running on http://localhost:${PORT}`);
-  console.log(`🚀 Website available at: http://localhost:5173`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📦 Website available at: http://localhost:5173`);
 });
