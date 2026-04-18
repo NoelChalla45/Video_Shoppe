@@ -2,7 +2,6 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export const options = {
-  // Stages allow us to "ramp up" traffic over time
   stages: [
     { duration: '1m', target: 50 },  
     { duration: '2m', target: 100 },     
