@@ -138,6 +138,27 @@
   box-shadow: 0 0 0 3px rgba(53, 184, 167, 0.22);
 }
 
+.password-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+}
+
+.password-toggle-btn {
+  border: 1px solid var(--line-soft);
+  border-radius: 0.6rem;
+  background: rgba(246, 240, 221, 0.08);
+  color: var(--cream-100);
+  padding: 0.72rem 0.88rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.password-toggle-btn:hover {
+  border-color: rgba(53, 184, 167, 0.72);
+}
+
 .login-options {
   display: flex;
   justify-content: space-between;

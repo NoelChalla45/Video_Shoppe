@@ -40,6 +40,7 @@ export default function OwnerDashboard() {
           <div className="owner-tool-grid">
             <button onClick={() => navigate("/owner/stock")}>DVDs In Stock</button>
             <button onClick={() => navigate("/owner/inventory")}>DVD Inventory</button>
+            <button onClick={() => navigate("/customer-activity")}>Customer Activity</button>
             <button onClick={() => navigate("/owner/employees")}>Employee Accounts</button>
           </div>
         </section>

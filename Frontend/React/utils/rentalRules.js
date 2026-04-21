@@ -1,17 +1,15 @@
 // Shared rental-limit rules used by the customer flow.
-import { getCartItems } from "./cart";
 
 export const MAX_RENTALS_ALLOWED = 3;
 
-function getCartRentalQuantity() {
-  const items = getCartItems();
+function getCartRentalQuantity(items = []) {
   return items
     .filter((item) => item.mode === "rent")
     .reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 }
 
-export function canAddRentalToCart(activeRentalQty = 0, nextQuantity = 1) {
-  const cartRentalQty = getCartRentalQuantity();
+export function canAddRentalToCart(activeRentalQty = 0, cartItems = [], nextQuantity = 1) {
+  const cartRentalQty = getCartRentalQuantity(cartItems);
   const projectedTotal = activeRentalQty + cartRentalQty + Number(nextQuantity || 0);
 
   return {
@@ -21,8 +19,8 @@ export function canAddRentalToCart(activeRentalQty = 0, nextQuantity = 1) {
   };
 }
 
-export function canCheckoutRentals(activeRentalQty = 0) {
-  const cartRentalQty = getCartRentalQuantity();
+export function canCheckoutRentals(activeRentalQty = 0, cartItems = []) {
+  const cartRentalQty = getCartRentalQuantity(cartItems);
   const projectedTotal = activeRentalQty + cartRentalQty;
 
   return {

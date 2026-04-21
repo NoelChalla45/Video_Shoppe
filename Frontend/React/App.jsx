@@ -126,7 +126,7 @@ function Layout() {
           <Route
             path="/customer-activity"
             element={
-              <RoleRoute allowedRoles={["EMPLOYEE"]}>
+              <RoleRoute allowedRoles={["EMPLOYEE", "OWNER"]}>
                 <CustomerActivity />
               </RoleRoute>
             }

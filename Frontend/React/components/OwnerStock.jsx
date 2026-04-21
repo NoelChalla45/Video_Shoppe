@@ -76,6 +76,8 @@ export default function OwnerStock() {
                     <strong>{dvd.name}</strong>
                     <span>{dvd.category}</span>
                     <span>Stock: {dvd.stock}</span>
+                    <span>Rent: {dvd.canRent !== false ? "On" : "Off"}</span>
+                    <span>Buy: {dvd.canBuy !== false ? "On" : "Off"}</span>
                   </article>
                 ))}
               </div>

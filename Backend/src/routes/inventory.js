@@ -144,7 +144,7 @@ router.get("/:id", async (req, res) => {
 
 // ── ADD NEW DVD ───────────────────────────────────────────────
 router.post("/add", requireAuth, requireRole(["OWNER"]), async (req, res) => {
-  const { name, price, category, stock, year, rating, director, cast, image, description } = req.body;
+  const { name, price, category, stock, canRent, canBuy, year, rating, director, cast, image, description } = req.body;
 
   try {
     const dvd = await prisma.inventory.create({
@@ -153,6 +153,8 @@ router.post("/add", requireAuth, requireRole(["OWNER"]), async (req, res) => {
         price: Number(price),
         category,
         stock: Number(stock) || 0,
+        canRent: canRent !== undefined ? Boolean(canRent) : true,
+        canBuy: canBuy !== undefined ? Boolean(canBuy) : true,
         year: year ? Number(year) : null,
         rating: rating ? String(rating) : null, 
         director: director || null,
@@ -180,6 +182,8 @@ router.put("/:id", requireAuth, requireRole(["OWNER"]), async (req, res) => {
         ...req.body,
         price: req.body.price ? parseFloat(req.body.price) : undefined,
         stock: req.body.stock !== undefined ? parseInt(req.body.stock) : undefined,
+        canRent: req.body.canRent !== undefined ? Boolean(req.body.canRent) : undefined,
+        canBuy: req.body.canBuy !== undefined ? Boolean(req.body.canBuy) : undefined,
       },
     });
     res.json(updated);

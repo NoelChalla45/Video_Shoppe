@@ -9,6 +9,8 @@ import crypto from "crypto";
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const PHONE_DIGIT_COUNT = 10;
+const ADDRESS_MIN_LENGTH = 5;
 
 // Group matching cart lines before checkout so totals stay clean.
 function normalizeItems(items = []) {
@@ -33,10 +35,21 @@ function normalizeItems(items = []) {
 }
 
 function normalizeContact(rawContact = {}) {
+  const phoneDigits = String(rawContact?.phone || "").replace(/\D/g, "").slice(0, PHONE_DIGIT_COUNT);
+  const address = String(rawContact?.address || "").trim().replace(/\s+/g, " ");
+
   return {
-    phone: String(rawContact?.phone || "").trim(),
-    address: String(rawContact?.address || "").trim(),
+    phone: phoneDigits,
+    address,
   };
+}
+
+function isValidPhone(phone) {
+  return /^\d{10}$/.test(phone);
+}
+
+function isValidAddress(address) {
+  return address.length >= ADDRESS_MIN_LENGTH && /[A-Za-z]/.test(address) && /\d/.test(address);
 }
 
 function toCheckoutLineItems(items = []) {
@@ -79,8 +92,11 @@ router.post("/checkout/session", requireAuth, async (req, res) => {
   if (normalizedItems.length === 0) {
     return res.status(400).json({ error: "Checkout items are required." });
   }
-  if (!contact.phone || !contact.address) {
-    return res.status(400).json({ error: "Phone number and address are required for checkout." });
+  if (!isValidPhone(contact.phone)) {
+    return res.status(400).json({ error: "Please enter a valid 10-digit phone number." });
+  }
+  if (!isValidAddress(contact.address)) {
+    return res.status(400).json({ error: "Please enter a valid street address with both letters and numbers." });
   }
 
   try {
@@ -96,7 +112,7 @@ router.post("/checkout/session", requireAuth, async (req, res) => {
       const ids = [...new Set(normalizedItems.map((item) => item.id))];
       const inventoryRows = await tx.inventory.findMany({
         where: { id: { in: ids } },
-        select: { id: true, name: true, price: true, stock: true },
+        select: { id: true, name: true, price: true, stock: true, canRent: true, canBuy: true },
       });
       const stockById = new Map(inventoryRows.map((row) => [row.id, row]));
 
@@ -104,6 +120,12 @@ router.post("/checkout/session", requireAuth, async (req, res) => {
       for (const item of normalizedItems) {
         const row = stockById.get(item.id);
         if (!row) throw new Error(`NOT_FOUND:${item.id}`);
+        if (item.orderType === OrderType.RENTAL && !row.canRent) {
+          throw new Error(`RENT_DISABLED:${row.id}:${row.name}`);
+        }
+        if (item.orderType === OrderType.PURCHASE && !row.canBuy) {
+          throw new Error(`BUY_DISABLED:${row.id}:${row.name}`);
+        }
         if (row.stock < item.quantity) {
           throw new Error(`INSUFFICIENT_STOCK:${row.id}:${row.name}:${row.stock}:${item.quantity}`);
         }
@@ -173,6 +195,14 @@ router.post("/checkout/session", requireAuth, async (req, res) => {
         error: `Not enough stock for "${name}" (ID ${id}). In stock: ${stock}, requested: ${requested}.`,
       });
     }
+    if (message.startsWith("RENT_DISABLED:")) {
+      const [, , name] = message.split(":");
+      return res.status(409).json({ error: `"${name}" is not currently available for rent.` });
+    }
+    if (message.startsWith("BUY_DISABLED:")) {
+      const [, , name] = message.split(":");
+      return res.status(409).json({ error: `"${name}" is not currently available for purchase.` });
+    }
     console.error("Create checkout session error:", err);
     return res.status(500).json({ error: "Failed to create Stripe checkout session." });
   }
@@ -231,6 +261,8 @@ router.post("/checkout/confirm", requireAuth, async (req, res) => {
         },
       });
 
+      await tx.cartItem.deleteMany({ where: { userId } });
+
       await tx.pendingCheckout.update({ 
         where: { id: pending.id }, 
         data: { status: PendingCheckoutStatus.COMPLETED, completedOrderId: order.id } 
@@ -251,15 +283,22 @@ router.post("/checkout", requireAuth, async (req, res) => {
   const { items: rawItems, contact } = req.body;
   const normalizedItems = normalizeItems(rawItems);
 
-  if (normalizedItems.length === 0 || !contact?.phone || !contact?.address) {
+  if (normalizedItems.length === 0) {
     return res.status(400).json({ error: "Invalid checkout data." });
+  }
+  if (!isValidPhone(normalizeContact(contact).phone)) {
+    return res.status(400).json({ error: "Please enter a valid 10-digit phone number." });
+  }
+  if (!isValidAddress(normalizeContact(contact).address)) {
+    return res.status(400).json({ error: "Please enter a valid street address with both letters and numbers." });
   }
 
   try {
     const result = await prisma.$transaction(async (tx) => {
+      const normalizedContact = normalizeContact(contact);
       await tx.user.update({
         where: { id: userId },
-        data: { phone: contact.phone, address: contact.address },
+        data: { phone: normalizedContact.phone, address: normalizedContact.address },
       });
 
       const ids = [...new Set(normalizedItems.map((i) => i.id))];
@@ -269,6 +308,8 @@ router.post("/checkout", requireAuth, async (req, res) => {
       const orderLines = normalizedItems.map((item) => {
         const row = stockMap.get(item.id);
         if (!row || row.stock < item.quantity) throw new Error("Stock error.");
+        if (item.orderType === OrderType.RENTAL && !row.canRent) throw new Error(`RENT_DISABLED:${row.name}`);
+        if (item.orderType === OrderType.PURCHASE && !row.canBuy) throw new Error(`BUY_DISABLED:${row.name}`);
         const unitPrice = item.orderType === OrderType.PURCHASE ? row.price * 5 : row.price;
         return { inventoryId: row.id, title: row.name, quantity: item.quantity, unitPrice, orderType: item.orderType };
       });
@@ -285,8 +326,16 @@ router.post("/checkout", requireAuth, async (req, res) => {
         },
       });
     });
+    await prisma.cartItem.deleteMany({ where: { userId } });
     res.status(201).json(result);
   } catch (err) {
+    const message = String(err?.message || "");
+    if (message.startsWith("RENT_DISABLED:")) {
+      return res.status(409).json({ error: `${message.split(":")[1]} is not currently available for rent.` });
+    }
+    if (message.startsWith("BUY_DISABLED:")) {
+      return res.status(409).json({ error: `${message.split(":")[1]} is not currently available for purchase.` });
+    }
     res.status(500).json({ error: "Checkout failed." });
   }
 });
@@ -304,6 +353,106 @@ router.get("/mine", requireAuth, async (req, res) => {
   }
 });
 
+router.get("/customers", requireAuth, requireRole(["EMPLOYEE", "OWNER"]), async (req, res) => {
+  try {
+    const customers = await prisma.user.findMany({
+      where: { role: "CUSTOMER" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json(customers);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch customers." });
+  }
+});
+
+router.get("/customers/:userId", requireAuth, requireRole(["EMPLOYEE", "OWNER"]), async (req, res) => {
+  try {
+    const customer = await prisma.user.findUnique({ where: { id: req.params.userId } });
+    const orders = await prisma.order.findMany({
+      where: { userId: req.params.userId },
+      include: { items: { include: { inventory: { select: { image: true } } } } },
+      orderBy: { createdAt: "desc" },
+    });
+    res.json({ customer, orders });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch customer history." });
+  }
+});
+
+router.post("/items/:itemId/return", requireAuth, requireRole(["EMPLOYEE", "OWNER"]), async (req, res) => {
+  const itemId = Number.parseInt(req.params.itemId, 10);
+
+  if (!Number.isInteger(itemId)) {
+    return res.status(400).json({ error: "Invalid order item id." });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const item = await tx.orderItem.findUnique({
+        where: { id: itemId },
+        include: {
+          order: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true, phone: true, address: true, createdAt: true, isActive: true },
+              },
+            },
+          },
+          inventory: { select: { image: true } },
+        },
+      });
+
+      if (!item) {
+        throw new Error("NOT_FOUND");
+      }
+      if (item.orderType !== OrderType.RENTAL) {
+        throw new Error("NOT_RENTAL");
+      }
+      if (item.returnedAt) {
+        throw new Error("ALREADY_RETURNED");
+      }
+
+      await tx.orderItem.update({
+        where: { id: itemId },
+        data: { returnedAt: new Date() },
+      });
+
+      await tx.inventory.update({
+        where: { id: item.inventoryId },
+        data: { stock: { increment: item.quantity } },
+      });
+
+      const orders = await tx.order.findMany({
+        where: { userId: item.order.userId },
+        include: { items: { include: { inventory: { select: { image: true } } } } },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return { customer: item.order.user, orders };
+    });
+
+    return res.json({ message: "DVD return processed.", ...result });
+  } catch (err) {
+    const message = String(err?.message || "");
+    if (message === "NOT_FOUND") {
+      return res.status(404).json({ error: "Order item not found." });
+    }
+    if (message === "NOT_RENTAL") {
+      return res.status(400).json({ error: "Only rental items can be returned." });
+    }
+    if (message === "ALREADY_RETURNED") {
+      return res.status(409).json({ error: "This rental has already been returned." });
+    }
+    console.error("Return rental error:", err);
+    return res.status(500).json({ error: "Failed to process DVD return." });
+  }
+});
+
 router.get("/:orderId", requireAuth, requireRole(["EMPLOYEE", "OWNER"]), async (req, res) => {
   try {
     const order = await prisma.order.findUnique({
@@ -313,20 +462,6 @@ router.get("/:orderId", requireAuth, requireRole(["EMPLOYEE", "OWNER"]), async (
     res.json(order);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch order detail." });
-  }
-});
-
-router.get("/customer/:userId", requireAuth, requireRole(["EMPLOYEE", "OWNER"]), async (req, res) => {
-  try {
-    const customer = await prisma.user.findUnique({ where: { id: req.params.userId } });
-    const orders = await prisma.order.findMany({
-      where: { userId: req.params.userId },
-      include: { items: true },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json({ customer, orders });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch customer history." });
   }
 });
 

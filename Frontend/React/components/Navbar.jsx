@@ -40,6 +40,7 @@ export default function Navbar() {
                 {isOwnerView && <li><NavLink to="/owner" className={navClass}>Owner</NavLink></li>}
                 {isOwnerView && <li><NavLink to="/owner/stock" className={navClass}>DVDs In Stock</NavLink></li>}
                 {isOwnerView && <li><NavLink to="/owner/inventory" className={navClass}>DVD Inventory</NavLink></li>}
+                {isOwnerView && <li><NavLink to="/customer-activity" className={navClass}>Customer Activity</NavLink></li>}
                 {isOwnerView && <li><NavLink to="/owner/employees" className={navClass}>Employee Accounts</NavLink></li>}
                 {!isOwnerView && !isEmployeeView && <li><NavLink to="/alerts" className={navClass}>Rental Alerts</NavLink></li>}
                 {!isOwnerView && !isEmployeeView && <li><NavLink to="/account" className={navClass}>Account</NavLink></li>}

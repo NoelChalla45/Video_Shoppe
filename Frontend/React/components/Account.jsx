@@ -180,6 +180,7 @@ export default function Account() {
                                             <p>{entry.mode === "rent" ? "Rental" : "Purchase"} x{entry.quantity}</p>
                                             <p>{formatDateTime(entry.date)}</p>
                                             <p className="account-list-status">{entry.status}</p>
+                                            {entry.returnedAt && <p>Returned: {formatDateTime(entry.returnedAt)}</p>}
                                         </div>
                                         <div className="account-list-amount">
                                             ${Number(entry.totalPrice || 0).toFixed(2)}

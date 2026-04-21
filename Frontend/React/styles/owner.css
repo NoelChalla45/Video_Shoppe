@@ -169,7 +169,7 @@
 
 .owner-list-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1.4fr) repeat(4, auto);
   gap: 0.6rem;
   align-items: center;
 }
@@ -209,6 +209,18 @@
 .owner-stock-editor button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.owner-toggle-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.owner-toggle-option input {
+  accent-color: var(--teal-400);
 }
 
 .owner-pagination {

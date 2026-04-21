@@ -29,7 +29,7 @@ export default function CheckoutSuccess() {
           body: JSON.stringify({ sessionId }),
           errorMessage: "Failed to confirm Stripe checkout.",
         });
-        clearCartItems();
+        await clearCartItems(token);
         setStatus("success");
       } catch (err) {
         setStatus("error");

@@ -10,7 +10,7 @@ function toImage(item) {
 export function getActiveRentalQuantityFromOrders(orders = []) {
   return orders.reduce((sum, order) => {
     const rentalQty = (order.items || []).reduce((itemSum, item) => {
-      if (item.orderType !== "RENTAL") return itemSum;
+      if (item.orderType !== "RENTAL" || item.returnedAt) return itemSum;
       return itemSum + Number(item.quantity || 0);
     }, 0);
 
@@ -43,16 +43,24 @@ export function getAccountActivityFromOrders(orders = []) {
         mode: item.orderType === "RENTAL" ? "rent" : "buy",
         totalPrice: Number((Number(item.unitPrice || 0) * Number(item.quantity || 0)).toFixed(2)),
         date: orderDate,
-        status: item.orderType === "RENTAL" ? "Active Rental" : "Purchased",
+        status:
+          item.orderType === "RENTAL"
+            ? item.returnedAt
+              ? "Returned"
+              : "Active Rental"
+            : "Purchased",
         dueDate: item.orderType === "RENTAL" ? dueDate : null,
+        returnedAt: item.returnedAt || null,
+        orderItemId: item.id,
       });
 
-      if (item.orderType === "RENTAL") {
+      if (item.orderType === "RENTAL" && !item.returnedAt) {
         activeRentals.push({
           rentalId: `${order.id}-${item.id}`,
           ...baseEntry,
           rentedAt: orderDate,
           dueDate,
+          orderItemId: item.id,
         });
       }
     });

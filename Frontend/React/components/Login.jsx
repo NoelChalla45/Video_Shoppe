@@ -6,12 +6,14 @@ import { apiFetchJson } from "../utils/api";
 import { getHomeRoute, setAuthSession } from "../utils/auth";
 
 const Login = () => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const location = useLocation();
     const navigate = useNavigate();
     const [mode, setMode] = useState("login"); // "login" | "register"
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -25,11 +27,18 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+
+        const trimmedEmail = email.trim().toLowerCase();
+        if (mode === "register" && !emailPattern.test(trimmedEmail)) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+
         setIsLoading(true);
 
         // Switch between login and registration endpoints.
         const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-        const body = mode === "login" ? { email, password } : { email, password, name: name.trim() };
+        const body = mode === "login" ? { email: trimmedEmail, password } : { email: trimmedEmail, password, name: name.trim() };
 
         try {
             const data = await apiFetchJson(endpoint, {
@@ -52,6 +61,7 @@ const Login = () => {
         setName("");
         setEmail("");
         setPassword("");
+        setShowPassword(false);
     };
 
     return (
@@ -108,13 +118,23 @@ const Login = () => {
 
                     <div className="input-group">
                         <label>Password {mode === "register" && <span className="optional">(min 6 chars)</span>}</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="password-field">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle-btn"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? "Hide" : "Show"}
+                            </button>
+                        </div>
                     </div>
 
                     {mode === "login" && (

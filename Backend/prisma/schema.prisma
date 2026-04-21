@@ -22,6 +22,7 @@ model User {
   updatedAt      DateTime  @updatedAt
   orders         Order[]
   pendingCheckouts PendingCheckout[]
+  cartItems      CartItem[]
 
   @@map("users")
 }
@@ -32,6 +33,8 @@ model Inventory {
   price       Float
   category    String
   stock       Int
+  canRent     Boolean @default(true)
+  canBuy      Boolean @default(true)
   year        Int?
   rating      Float?
   director    String?
@@ -39,6 +42,7 @@ model Inventory {
   image       String
   description String?
   orderItems  OrderItem[]
+  cartItems   CartItem[]
 }
 
 model Order {
@@ -59,6 +63,7 @@ model OrderItem {
   quantity    Int
   unitPrice   Float
   orderType   OrderType
+  returnedAt  DateTime?
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Restrict)
 }
@@ -77,6 +82,20 @@ model PendingCheckout {
   updatedAt        DateTime              @updatedAt
   user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   completedOrder   Order?                @relation(fields: [completedOrderId], references: [id], onDelete: SetNull)
+}
+
+model CartItem {
+  id          String    @id @default(cuid())
+  userId      String
+  inventoryId Int
+  quantity    Int       @default(1)
+  orderType   OrderType
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, inventoryId, orderType])
 }
 
 enum UserRole {

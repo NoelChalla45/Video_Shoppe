@@ -8,6 +8,14 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
 
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // Normalize incoming role values before saving them.
 function normalizeRole(inputRole) {
   const role = String(inputRole || "CUSTOMER").toUpperCase();
@@ -20,16 +28,20 @@ function normalizeRole(inputRole) {
 router.post("/register", async (req, res) => {
   const { email, password, name, role, phone, address, employmentType } = req.body;
   const normalizedName = String(name || "").trim();
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email || !password || !normalizedName) {
+  if (!normalizedEmail || !password || !normalizedName) {
     return res.status(400).json({ error: "Name, email, and password are required." });
+  }
+  if (!isValidEmail(normalizedEmail)) {
+    return res.status(400).json({ error: "Please enter a valid email address." });
   }
   if (password.length < 6) {
     return res.status(400).json({ error: "Password must be at least 6 characters." });
   }
 
   try {
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       return res.status(409).json({ error: "An account with that email already exists." });
     }
@@ -38,7 +50,7 @@ router.post("/register", async (req, res) => {
     const normalizedRole = normalizeRole(role);
     const user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         name: normalizedName,
         role: normalizedRole,
@@ -66,14 +78,15 @@ router.post("/register", async (req, res) => {
 
 // ── Login ─────────────────────────────────────────────────────
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const normalizedEmail = normalizeEmail(req.body?.email);
 
-  if (!email || !password) {
+  if (!normalizedEmail || !password) {
     return res.status(400).json({ error: "Email and password are required." });
   }
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password." });
     }

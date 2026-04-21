@@ -49,7 +49,8 @@ export default function Catalog() {
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
     const matchesPrice = currentPrice <= maxPrice;
     const matchesStock = showInStockOnly ? product.stock > 0 : true;
-    return matchesSearch && matchesCategory && matchesPrice && matchesStock;
+    const matchesModeAvailability = isBuyMode ? product.canBuy !== false : product.canRent !== false;
+    return matchesSearch && matchesCategory && matchesPrice && matchesStock && matchesModeAvailability;
   });
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -166,13 +167,15 @@ export default function Catalog() {
               currentItems.map((product) => {
                 const displayPrice = isBuyMode ? (product.price * 5).toFixed(2) : product.price.toFixed(2);
                 const isOutOfStock = product.stock === 0;
+                const modeEnabled = isBuyMode ? product.canBuy !== false : product.canRent !== false;
+                const statusLabel = !modeEnabled ? (isBuyMode ? "Buy off" : "Rent off") : isOutOfStock ? "Out" : `${product.stock} in stock`;
 
                 return (
                   <div key={product.id} className="product-card" onClick={() => navigate(`/catalog/${product.id}`)}>
                     <div className="image-box">
                       <img src={product.image} alt={product.name} style={{ opacity: isOutOfStock ? 0.5 : 1 }} />
-                      <span className={`stock-badge ${isOutOfStock ? "out" : "in"}`}>
-                        {isOutOfStock ? "Out" : `${product.stock} in stock`}
+                      <span className={`stock-badge ${!modeEnabled || isOutOfStock ? "out" : "in"}`}>
+                        {statusLabel}
                       </span>
                     </div>
                     <h3>{product.name}</h3>

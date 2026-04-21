@@ -12,6 +12,27 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const PHONE_DIGIT_COUNT = 10;
+
+function normalizePhone(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, PHONE_DIGIT_COUNT);
+}
+
+function formatPhone(value) {
+  const digits = normalizePhone(value);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function isValidPhone(value) {
+  return normalizePhone(value).length === PHONE_DIGIT_COUNT;
+}
+
+function isValidAddress(value) {
+  const normalized = String(value || "").trim().replace(/\s+/g, " ");
+  return normalized.length >= 5 && /[A-Za-z]/.test(normalized) && /\d/.test(normalized);
+}
 
 
 function StripeCheckoutForm({
@@ -97,12 +118,13 @@ export default function Cart() {
   const userId = user?.id || "";
   const token = getToken();
 
-  const [items, setItems] = useState(getCartItems());
+  const [items, setItems] = useState([]);
   const [checkoutForm, setCheckoutForm] = useState({
-    phone: user?.phone || "",
+    phone: formatPhone(user?.phone || ""),
     address: user?.address || "",
   });
   const [checkoutError, setCheckoutError] = useState("");
+  const [isLoadingCart, setIsLoadingCart] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [activeRentalQty, setActiveRentalQty] = useState(0);
   const [isLoadingRentalState, setIsLoadingRentalState] = useState(true);
@@ -125,15 +147,18 @@ export default function Cart() {
   useEffect(() => {
     const loadOrders = async () => {
       if (!token || !user) {
+        setItems([]);
         setActiveRentalQty(0);
+        setIsLoadingCart(false);
         setIsLoadingRentalState(false);
         return;
       }
 
+      setIsLoadingCart(true);
       setIsLoadingRentalState(true);
 
       try {
-        const [profileResponse, orders] = await Promise.all([
+        const [profileResponse, orders, cartItems] = await Promise.all([
           apiFetchJson("/api/auth/me", {
             token,
             errorMessage: "Failed to load checkout details.",
@@ -142,16 +167,19 @@ export default function Cart() {
             token,
             errorMessage: "Failed to load active rentals.",
           }),
+          getCartItems(token),
         ]);
 
+        setItems(Array.isArray(cartItems) ? cartItems : []);
         setCheckoutForm({
-          phone: profileResponse.user?.phone || user?.phone || "",
+          phone: formatPhone(profileResponse.user?.phone || user?.phone || ""),
           address: profileResponse.user?.address || user?.address || "",
         });
         setActiveRentalQty(getActiveRentalQuantityFromOrders(orders));
       } catch (err) {
         setCheckoutError(err.message || "Failed to load checkout details.");
       } finally {
+        setIsLoadingCart(false);
         setIsLoadingRentalState(false);
       }
     };
@@ -159,25 +187,38 @@ export default function Cart() {
     loadOrders();
   }, [token, userId]);
 
-  const handleRemove = (itemKey) => {
-    const next = removeCartItem(itemKey);
-    setItems(next);
+  const handleRemove = async (item) => {
+    try {
+      const next = await removeCartItem(item.id, item.mode, token);
+      setItems(Array.isArray(next) ? next : []);
+    } catch (err) {
+      setCheckoutError(err.message || "Failed to remove item from cart.");
+    }
   };
 
-  const handleClear = () => {
-    clearCartItems();
-    setItems([]);
+  const handleClear = async () => {
+    try {
+      const next = await clearCartItems(token);
+      setItems(Array.isArray(next) ? next : []);
+    } catch (err) {
+      setCheckoutError(err.message || "Failed to clear cart.");
+    }
   };
 
   const handleProceedToPayment = () => {
     setCheckoutError("");
     
-    if (!checkoutForm.phone.trim() || !checkoutForm.address.trim()) {
-      setCheckoutError("Phone number and address are required before checkout.");
+    if (!isValidPhone(checkoutForm.phone)) {
+      setCheckoutError("Enter a valid 10-digit phone number before checkout.");
       return;
     }
 
-    const limitCheck = canCheckoutRentals(activeRentalQty);
+    if (!isValidAddress(checkoutForm.address)) {
+      setCheckoutError("Enter a valid street address with both letters and numbers before checkout.");
+      return;
+    }
+
+    const limitCheck = canCheckoutRentals(activeRentalQty, items);
     if (!limitCheck.allowed) {
       setCheckoutError(`You can only rent up to ${limitCheck.maxAllowed} DVDs at a time.`);
       return;
@@ -199,7 +240,11 @@ export default function Cart() {
           </button>
         </header>
 
-        {items.length === 0 ? (
+        {isLoadingCart ? (
+          <section className="cart-empty">
+            <p>Loading your cart...</p>
+          </section>
+        ) : items.length === 0 ? (
           <section className="cart-empty">
             <p>Your cart is empty.</p>
             <button className="cart-primary-btn" onClick={() => navigate("/catalog")}>
@@ -223,7 +268,7 @@ export default function Cart() {
                   </div>
                   <div className="cart-item-actions">
                     <strong>${(item.unitPrice * item.quantity).toFixed(2)}</strong>
-                    <button className="cart-remove-btn" onClick={() => handleRemove(item.itemKey)}>
+                    <button className="cart-remove-btn" onClick={() => handleRemove(item)}>
                       Remove
                     </button>
                   </div>
@@ -254,8 +299,9 @@ export default function Cart() {
                       id="checkout-phone"
                       type="tel"
                       value={checkoutForm.phone}
-                      onChange={(e) => setCheckoutForm((prev) => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) => setCheckoutForm((prev) => ({ ...prev, phone: formatPhone(e.target.value) }))}
                       placeholder="(555) 123-4567"
+                      inputMode="numeric"
                     />
                   </div>
                   <div className="cart-field">
