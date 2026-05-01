@@ -6,7 +6,7 @@ const isLocalDevHost =
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
 // In production, default to same-origin instead of localhost.
-export const API_BASE_URL = normalizedApiUrl || (isLocalDevHost ? "http://localhost:5000" : "");
+export const API_BASE_URL = normalizedApiUrl || (isLocalDevHost ? "http://localhost:3001" : "");
 
 export async function apiFetch(path, options = {}) {
   const { token, headers, ...rest } = options;

@@ -2,8 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import "../styles/catalog-preview.css";
+import { API_BASE_URL } from "../utils/api";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const GENRES = ["Action", "Horror", "Sci-Fi", "Comedy", "Anime", "Drama", "Thriller", "Family"];
 const MOVIES_PER_PAGE = 10;
 const GENRE_CATEGORY_MAP = {
@@ -28,7 +28,7 @@ export default function CatalogPreview() {
   useEffect(() => {
     const loadPreview = async () => {
       try {
-        const response = await fetch(`${API}/api/inventory`);
+        const response = await fetch(`${API_BASE_URL}/api/inventory`);
         if (!response.ok) throw new Error("Failed to fetch preview movies");
 
         const data = await response.json();

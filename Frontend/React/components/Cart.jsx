@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/cart.css";
 import { clearCartItems, getCartItems, removeCartItem } from "../utils/cart";
-import { apiFetchJson } from "../utils/api";
+import { API_BASE_URL, apiFetchJson } from "../utils/api";
 import { getStoredUser, getToken } from "../utils/auth";
 import { getActiveRentalQuantityFromOrders } from "../utils/orders";
 import { canCheckoutRentals } from "../utils/rentalRules";
@@ -11,7 +11,6 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const PHONE_DIGIT_COUNT = 10;
 
 function normalizePhone(value) {
@@ -57,7 +56,7 @@ function StripeCheckoutForm({
     try {
       const authHeader = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 
-      const intentRes = await fetch(`${API}/api/orders/create-payment-intent`, {
+      const intentRes = await fetch(`${API_BASE_URL}/api/orders/create-payment-intent`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": authHeader },
         body: JSON.stringify({ amount: Math.round(total * 100) }),
@@ -73,7 +72,7 @@ function StripeCheckoutForm({
       if (stripeErr) throw new Error(stripeErr.message);
 
       if (paymentIntent.status === "succeeded") {
-        const orderRes = await fetch(`${API}/api/orders/checkout`, {
+        const orderRes = await fetch(`${API_BASE_URL}/api/orders/checkout`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": authHeader },
           body: JSON.stringify({
