@@ -4,11 +4,9 @@ import { OrderType, PendingCheckoutStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { requireStripe } from "../lib/stripe.js"; 
-import Stripe from "stripe";
 import crypto from "crypto";
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const PHONE_DIGIT_COUNT = 10;
 const ADDRESS_MIN_LENGTH = 5;
 
@@ -71,6 +69,7 @@ router.post("/create-payment-intent", requireAuth, async (req, res) => {
   if (!amount || amount <= 0) return res.status(400).json({ error: "Invalid amount." });
 
   try {
+    const stripe = requireStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount),
       currency: "usd",
@@ -78,6 +77,9 @@ router.post("/create-payment-intent", requireAuth, async (req, res) => {
     });
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
+    if (String(err?.message || "") === "STRIPE_NOT_CONFIGURED") {
+      return res.status(500).json({ error: "Stripe is not configured on the server yet." });
+    }
     console.error("Stripe Error:", err);
     res.status(500).json({ error: "Failed to initialize Stripe." });
   }
